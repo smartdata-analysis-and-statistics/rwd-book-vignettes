@@ -1,0 +1,7 @@
+---
+title: "RWD Book Vignettes"
+---
+
+# Welcome
+
+This website contains practical vignettes for real-world data analysis.

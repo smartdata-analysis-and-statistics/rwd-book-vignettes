@@ -10,6 +10,7 @@ project:
   resources:
     - data/chapter10_exploration_data.rds
     - figures/*.svg
+    - sdas_large.png
 
 execute:
   freeze: auto
@@ -19,6 +20,10 @@ website:
   site-url: "https://smartdata-analysis-and-statistics.github.io/rwd-book-vignettes/"
   repo-url: "https://github.com/smartdata-analysis-and-statistics/rwd-book-vignettes"
   navbar:
+    background: light
+    foreground: dark
+    logo: sdas_large.png
+    logo-alt: "Smart Data Analysis and Statistics"
     left:
       - href: index.qmd
         text: Overview
@@ -43,3 +48,4 @@ format:
     number-sections: false
     code-copy: true
     code-overflow: wrap
+    css: styles.css

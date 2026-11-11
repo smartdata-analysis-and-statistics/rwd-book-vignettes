@@ -7,6 +7,7 @@ on:
     paths:
       - "Chapter10/Practicals/**"
       - "Chapter10/data/README.md"
+      - "_brand.html"
       - ".github/workflows/publish-chapter10-practicals.yml"
 
 permissions:

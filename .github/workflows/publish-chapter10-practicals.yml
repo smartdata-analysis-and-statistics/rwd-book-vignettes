@@ -34,7 +34,7 @@ jobs:
           use-public-rspm: true
 
       - name: Install R packages
-        run: Rscript -e 'install.packages(c("knitr", "rmarkdown", "MatchIt", "MatchThem", "mice", "cobalt", "marginaleffects", "dplyr", "ggplot2", "tidyr"))'
+        run: Rscript -e 'install.packages(c("knitr", "rmarkdown", "MatchIt", "MatchThem", "mice", "cobalt", "marginaleffects", "dplyr", "ggplot2", "tidyr", "optmatch"))'
 
       - name: Render Chapter 10 site
         run: quarto render Chapter10/Practicals

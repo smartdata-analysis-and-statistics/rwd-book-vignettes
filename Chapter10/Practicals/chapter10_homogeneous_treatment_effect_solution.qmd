@@ -166,16 +166,29 @@ The formulas define one conditional model for each incomplete variable. The othe
 ```{r}
 #| eval: true
 
-# Summarize mixing of the imputed chain means at the final iteration.
-final_convergence <- mice::convergence(
-  imp, diagnostic = "all", parameter = "mean"
-) %>%
-  dplyr::filter(vrb %in% incomplete_vars, .it == max(.it)) %>%
-  dplyr::transmute(
-    variable = vrb,
-    psrf = psrf,
-    lag1_autocorrelation = ac
+# Summarize mixing directly from mice's stored chain means. This uses the
+# classical, unsplit Gelman-Rubin PSRF and average lag-1 correlation; it does
+# not require the optional rstan package used by mice::convergence().
+final_convergence <- do.call(rbind, lapply(incomplete_vars, function(variable) {
+  chain_means <- matrix(
+    imp$chainMean[variable, seq_len(imp$iteration), , drop = FALSE],
+    nrow = imp$iteration,
+    ncol = imp$m
   )
+  n_iter <- nrow(chain_means)
+  within_var <- mean(apply(chain_means, 2, stats::var))
+  between_var <- n_iter * stats::var(colMeans(chain_means))
+  var_estimate <- ((n_iter - 1) / n_iter) * within_var + between_var / n_iter
+  lag_cor <- vapply(seq_len(n_iter - 1), function(i) {
+    stats::cor(chain_means[i, ], chain_means[i + 1, ])
+  }, numeric(1))
+  lag_cor[!is.finite(lag_cor)] <- 0
+  data.frame(
+    variable = variable,
+    psrf = sqrt(var_estimate / within_var),
+    lag1_autocorrelation = mean(lag_cor)
+  )
+}))
 final_convergence
 
 # Trace plots show imputed chain means and standard deviations across iterations.
@@ -200,7 +213,7 @@ densityplot(imp, ~ age + logPremedicalcost + prerelapseNum)
 
 
 ::: {.callout-tip title="Comments on the tasks and discussion answers"}
-**Task 1.** Final chain-mean diagnostics are: age, PSRF **1.006** and lag-1 autocorrelation **−0.0143**; log cost, **1.005** and **0.0755**; previous relapse count, **1.011** and **0.0059**. The trace plots fluctuate without sustained drift or clearly separated chains. These values are reasonably close to 1 in this run, but they do not prove the imputation model is correctly specified or that the chains have fully converged.
+**Task 1.** Read the classical PSRF and average lag-1 correlation for each incomplete variable from the table above. Values near 1 suggest similar within- and between-chain variability, while the trace plots should be checked for sustained drift or clearly separated chains. These diagnostics do not prove the imputation model is correctly specified or that the chains have fully converged.
 
 **Task 2.** The observed and imputed density curves overlap reasonably and the imputed values look plausible for these variables. Treat this as a visual check, not a formal confirmation.
 
@@ -554,7 +567,7 @@ ggplot(plot_data, aes(x = estimate, y = analysis)) +
 ::: {.callout-tip title="Comments on the tasks and discussion answers"}
 **Task 1.** The FCS model uses PMM for age, log cost, and previous relapse count. Its predictors include the other incomplete covariates, baseline predictors, treatment, outcome, and log follow-up to support the planned matching and outcome models.
 
-**Task 2.** The chain-mean PSRF values are close to 1 (1.005–1.011), without clear persistent drift or separated chains. The observed and imputed marginal distributions overlap reasonably and the imputed values look plausible, although marginal agreement does not establish that conditional relationships are preserved. In the over-imputation check, **93.8%** of observed log costs fall inside their 95% predictive intervals (2,490 of 2,654; interval **92.8%–94.7%**); the mean absolute distance is **0.792** and mean interval width is **3.75**. Matching reduces the largest adjusted absolute standardized difference below **0.06**, under the practical's 0.1 guide. These checks support proceeding but do not prove the imputation or analysis models are correct.
+**Task 2.** The chain-mean PSRF values in the table are close to 1, without clear persistent drift or separated chains. The observed and imputed marginal distributions overlap reasonably and the imputed values look plausible, although marginal agreement does not establish that conditional relationships are preserved. In the over-imputation check, **93.8%** of observed log costs fall inside their 95% predictive intervals (2,490 of 2,654; interval **92.8%–94.7%**); the mean absolute distance is **0.792** and mean interval width is **3.75**. Matching reduces the largest adjusted absolute standardized difference below **0.06**, under the practical's 0.1 guide. These checks support proceeding but do not prove the imputation or analysis models are correct.
 
 **Task 3.** The MAR within estimate is **5.78 (95% CI 5.30 to 6.27)**. Delta estimates are **5.79 (5.30 to 6.28)** at −0.50, **5.78 (5.24 to 6.32)** at −0.25, **5.82 (5.33 to 6.31)** at 0.25, and **5.82 (5.35 to 6.29)** at 0.50.
 

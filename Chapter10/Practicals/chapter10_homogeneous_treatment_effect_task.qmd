@@ -138,16 +138,29 @@ if (is.null(imp$loggedEvents)) "No logged events" else imp$loggedEvents
 
 ```{r}
 #| eval: false
-# Summarize mixing of the imputed chain means at the final iteration.
-final_convergence <- mice::convergence(
-  imp, diagnostic = "all", parameter = "mean"
-) %>%
-  dplyr::filter(vrb %in% incomplete_vars, .it == max(.it)) %>%
-  dplyr::transmute(
-    variable = vrb,
-    psrf = psrf,
-    lag1_autocorrelation = ac
+# Summarize mixing directly from mice's stored chain means. This uses the
+# classical, unsplit Gelman-Rubin PSRF and average lag-1 correlation; it does
+# not require the optional rstan package used by mice::convergence().
+final_convergence <- do.call(rbind, lapply(incomplete_vars, function(variable) {
+  chain_means <- matrix(
+    imp$chainMean[variable, seq_len(imp$iteration), , drop = FALSE],
+    nrow = imp$iteration,
+    ncol = imp$m
   )
+  n_iter <- nrow(chain_means)
+  within_var <- mean(apply(chain_means, 2, stats::var))
+  between_var <- n_iter * stats::var(colMeans(chain_means))
+  var_estimate <- ((n_iter - 1) / n_iter) * within_var + between_var / n_iter
+  lag_cor <- vapply(seq_len(n_iter - 1), function(i) {
+    stats::cor(chain_means[i, ], chain_means[i + 1, ])
+  }, numeric(1))
+  lag_cor[!is.finite(lag_cor)] <- 0
+  data.frame(
+    variable = variable,
+    psrf = sqrt(var_estimate / within_var),
+    lag1_autocorrelation = mean(lag_cor)
+  )
+}))
 final_convergence
 
 # Trace plots show imputed chain means and standard deviations across iterations.
@@ -156,7 +169,7 @@ plot(imp)
 densityplot(imp, ~ age + logPremedicalcost + prerelapseNum)
 ```
 
-The table gives a numeric PSRF and lag-1 autocorrelation for each incomplete variable's imputed chain mean at the final iteration. PSRF is similar in spirit to R-hat: values near 1 indicate that chains have similar within- and between-chain variability. Lag-1 autocorrelation summarizes dependence between adjacent iterations. The trace plot shows chain means and standard deviations over all iterations; look for persistent drift or separated chains. These describe chain behavior, not whether the imputation model is correctly specified, and no single threshold proves convergence. Recent guidance notes that there is no universal quantitative convergence test for iterative imputation algorithms ([Oberman et al., 2024](https://doi.org/10.1002/bimj.202200107)). Also check that imputed values are plausible and that observed and imputed distributions and key relationships with treatment and outcome are coherent.
+The table gives a classical, unsplit Gelman–Rubin potential scale reduction factor (PSRF) and the average lag-1 correlation between successive chain means for each incomplete variable. A PSRF near 1 suggests similar within- and between-chain variability; the autocorrelation summarizes dependence across iterations. These simple diagnostics are calculated from `mice`'s stored chain means and avoid an optional `rstan` dependency. They are not rank-normalized split R-hat diagnostics, and they do not establish convergence or correct model specification. Inspect trace plots for persistent drift or separated chains, and assess whether imputed values and their relationships with treatment and outcome are coherent. Recent guidance notes that there is no universal quantitative convergence test for iterative imputation algorithms ([Oberman et al., 2024](https://doi.org/10.1002/bimj.202200107)).
 
 #### Your tasks
 

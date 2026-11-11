@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="530" viewBox="0 0 1120 530" role="img" aria-labelledby="title desc">
+  <title id="title">MAR imputation model DAG for the homogeneous treatment-effect practical</title>
+  <desc id="desc">Fully observed treatment, gender, number of symptoms, outcome and follow-up predict missingness in age, log premedical cost and previous relapse count. Each true incomplete value and its observation indicator determine whether the corresponding value is observed. The incomplete values do not cause their own missingness.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#4b5563"/></marker>
+    <style>
+      .predictor { fill:#e3f2fd; stroke:#1565c0; stroke-width:2; }
+      .indicator { fill:#fff3e0; stroke:#ef6c00; stroke-width:2; }
+      .value { fill:#e8f5e9; stroke:#2e7d32; stroke-width:2; }
+      .edge { stroke:#4b5563; stroke-width:2; fill:none; marker-end:url(#arrow); }
+      text { font-family:Arial,sans-serif; font-size:15px; fill:#1f2937; }
+      .label { font-size:20px; font-weight:600; }
+      .column { font-size:16px; font-weight:600; fill:#4b5563; }
+    </style>
+  </defs>
+  <rect width="1120" height="530" fill="white"/>
+  <text x="560" y="32" text-anchor="middle" class="label">MAR information structure for imputation</text>
+  <text x="165" y="70" text-anchor="middle" class="column">Fully observed predictors</text>
+  <text x="450" y="70" text-anchor="middle" class="column">Incomplete true values</text>
+  <text x="700" y="70" text-anchor="middle" class="column">Observation indicators</text>
+  <text x="965" y="70" text-anchor="middle" class="column">Values available for analysis</text>
+
+  <!-- Fully observed predictors drive each missingness process. -->
+  <path class="edge" d="M270 125 C370 75 520 75 620 120"/>
+  <path class="edge" d="M270 155 C360 155 430 190 510 190 S580 215 620 255"/>
+  <path class="edge" d="M270 185 H300 V440 H590 V385 H620"/>
+  <path class="edge" d="M510 125 H620"/>
+  <path class="edge" d="M510 255 H620"/>
+  <path class="edge" d="M510 385 H620"/>
+  <path class="edge" d="M780 125 H840"/>
+  <path class="edge" d="M780 255 H840"/>
+  <path class="edge" d="M780 385 H840"/>
+  <path class="edge" d="M510 110 C600 78 760 78 840 110"/>
+  <path class="edge" d="M510 245 C600 210 760 210 840 245"/>
+  <path class="edge" d="M510 375 C600 345 760 345 840 375"/>
+
+  <rect class="predictor" x="45" y="95" width="225" height="120" rx="8"/>
+  <text x="157" y="125" text-anchor="middle">Treatment</text>
+  <text x="157" y="150" text-anchor="middle">Gender</text>
+  <text x="157" y="175" text-anchor="middle">Symptoms</text>
+  <text x="157" y="200" text-anchor="middle">Outcome y, follow-up years</text>
+
+  <rect class="value" x="390" y="100" width="120" height="50" rx="8"/><text x="450" y="131" text-anchor="middle">True age</text>
+  <rect class="value" x="390" y="230" width="120" height="50" rx="8"/><text x="450" y="261" text-anchor="middle">True cost</text>
+  <rect class="value" x="390" y="360" width="120" height="50" rx="8"/><text x="450" y="391" text-anchor="middle">True relapse count</text>
+
+  <rect class="indicator" x="620" y="100" width="160" height="50" rx="8"/><text x="700" y="131" text-anchor="middle">R_age</text>
+  <rect class="indicator" x="620" y="230" width="160" height="50" rx="8"/><text x="700" y="261" text-anchor="middle">R_cost</text>
+  <rect class="indicator" x="620" y="360" width="160" height="50" rx="8"/><text x="700" y="391" text-anchor="middle">R_relapse</text>
+
+  <rect class="value" x="840" y="100" width="250" height="50" rx="8"/><text x="965" y="131" text-anchor="middle">Observed age when R_age = 1</text>
+  <rect class="value" x="840" y="230" width="250" height="50" rx="8"/><text x="965" y="261" text-anchor="middle">Observed cost when R_cost = 1</text>
+  <rect class="value" x="840" y="360" width="250" height="50" rx="8"/><text x="965" y="391" text-anchor="middle">Observed relapse count when R_relapse = 1</text>
+
+  <text x="560" y="475" text-anchor="middle">R = 1 means observed; R = 0 means missing. Missingness depends on observed predictors in the imputation model.</text>
+</svg>

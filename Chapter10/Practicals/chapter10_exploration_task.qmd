@@ -1,0 +1,249 @@
+---
+title: "Dealing with Missing Data: Data Preparation and Exploration"
+subtitle: "Computer Practical"
+author:
+  - name: "Thomas Debray"
+    affiliation: "Smart Data Analysis and Statistics"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    toc-location: right
+    number-sections: false
+execute:
+  echo: true
+  warning: false
+  message: false
+editor:
+  markdown:
+    wrap: sentence
+---
+
+# Introduction
+
+You are helping a team compare dimethyl fumarate (`DMF`) with teriflunomide (`TERI`) using real-world data. Some baseline covariates are incomplete. Your job is to check the data and prepare a short handoff for the analyst who will handle the missing values.
+
+Work through the study question, data checks, missingness summaries, and observed relationships, then write your recommendation. Assume the study team has supplied the causal adjustment set and substantive outcome model shown below; your task is to prepare the data, not to redefine the causal question from exploratory patterns.
+
+## 1. State the analysis question
+
+The target is the population average treatment effect:
+
+> Among eligible patients, what is the average difference in expected relapse episodes over the specified follow-up if everyone received DMF rather than TERI?
+
+The supplied causal structure identifies `age`, `gender`, `prevDMTefficacy`, `logPremedicalcost`, and `prerelapseNum` as confounders. The planned outcome model is:
+
+```{r}
+#| eval: false
+y ~ treatment + age + gender + prevDMTefficacy + logPremedicalcost +
+  prerelapseNum + numSymptoms + offset(log(years))
+```
+
+Before continuing, list any additional observed variables that might help predict incomplete values. Keep confounders in the causal adjustment set distinct from auxiliary predictors used to improve imputation. This is the first handoff decision: the causal analyst defines what must be adjusted for, while the data analyst identifies other observed information that may help predict missing values.
+
+### Your tasks
+
+1. State the treatment, outcome, follow-up period, and target estimand in your own words.
+2. Identify the supplied confounders and list any additional observed variables that could help impute incomplete values.
+
+### Questions for discussion
+
+- Why should exploratory associations not be used to redefine the supplied causal adjustment set?
+- How can an auxiliary predictor help imputation without being a confounder in the treatment-effect analysis?
+
+## 2. Load and inspect the data
+
+Install the packages once if needed, then load the saved dataset.
+
+```{r}
+#| eval: false
+install.packages(c("dplyr", "tidyr", "ggplot2", "mice"))
+```
+
+```{r}
+#| eval: false
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(mice)
+
+sdas_palette <- c(navy = "#26476b", green = "#80c42b", muted = "#5d6873")
+
+data_obs <- readRDS("data/chapter10_exploration_data.rds")
+```
+
+### Your tasks
+
+1. Run the basic checks below.
+2. Record variable types, unexpected ranges or categories, and whether any duplicate rows were found.
+3. Note which provenance questions cannot be answered from this file.
+
+Use these basic checks to understand the data before plotting:
+
+```{r}
+#| eval: false
+dim(data_obs)             # number of records and columns
+str(data_obs)             # variable types
+summary(data_obs)         # ranges and category counts
+anyDuplicated(data_obs)   # duplicate rows; zero means none found
+```
+
+Record the variable types, any unexpected ranges or categories, and whether duplicate rows were found. As the analyst, also note which questions you cannot answer because the file does not include site, source-system, or reason-for-missingness fields. These omissions matter later: the team may have a plausible missingness story, but cannot check the actual documentation process from this dataset.
+
+### Questions for discussion
+
+- Which data-quality checks can you complete from this file?
+- What missing-data context would you ask the data team to provide?
+
+## 3. Describe the missing values
+
+First count missing values per incomplete variable and the number of records with any missing value. Then use one missingness-pattern table to see which targets are missing together.
+
+```{r}
+#| eval: false
+incomplete_vars <- names(data_obs)[vapply(data_obs, anyNA, logical(1))]
+
+missing_summary <- tibble(
+  variable = incomplete_vars,
+  missing_n = colSums(is.na(data_obs[incomplete_vars])),
+  missing_percent = 100 * colMeans(is.na(data_obs[incomplete_vars]))
+)
+missing_summary
+
+sum(!complete.cases(data_obs))
+
+# Short labels keep the pattern display readable.
+pattern_data <- data_obs %>%
+  transmute(Age = age, Cost = logPremedicalcost,
+            Relapse = prerelapseNum)
+mice::md.pattern(pattern_data, plot = TRUE)
+```
+
+The clinical lead asks whether records are equally complete in the two treatment groups. Compare missingness by treatment using a small table. This is a useful clue for the analysis team, but it does not explain why values are missing: a group difference may arise through observed predictors, unobserved values, or data-collection processes.
+
+```{r}
+#| eval: false
+data_obs %>%
+  group_by(treatment) %>%
+  summarise(
+    across(all_of(incomplete_vars), ~ 100 * mean(is.na(.x))),
+    .groups = "drop"
+  )
+```
+
+### Your tasks
+
+1. Count missing values and percentages for each incomplete variable.
+2. Count records with any missing values and records complete on all variables.
+3. Use the pattern table to describe which incomplete variables tend to be missing together.
+4. Compare missingness percentages by treatment group.
+
+### Questions for the research team
+
+- Which variables are incomplete, and what percentage is missing in each?
+- How many records are complete for all variables?
+- Do the incomplete variables tend to be missing separately or together?
+- Are missingness percentages similar across treatment groups? What can this comparison tell you, and what can it not tell you?
+
+### Questions for discussion
+
+- Does a difference in missingness by treatment prove that treatment caused values to be missing?
+- Can these summaries distinguish MAR from MNAR? Why or why not?
+
+## 4. Explore the incomplete variables
+
+### 4.1 What do the observed values look like?
+
+The analyst now checks whether the values that are present look plausible and what forms they take. This single faceted histogram checks observed range, skew, unusual values, and discreteness. It excludes missing values by design; it does not show the distribution of the missing values.
+
+```{r}
+#| eval: false
+observed_long <- data_obs %>%
+  select(all_of(incomplete_vars)) %>%
+  pivot_longer(everything(), names_to = "variable", values_to = "value") %>%
+  filter(!is.na(value))
+
+ggplot(observed_long, aes(value)) +
+  geom_histogram(binwidth = 0.5, boundary = -0.25,
+                 fill = sdas_palette[["navy"]], colour = "white") +
+  facet_wrap(~ variable, scales = "free", ncol = 1) +
+  labs(x = NULL, y = "Observed records",
+       title = "Observed distributions of incomplete variables") +
+  theme_minimal()
+```
+
+#### Your tasks
+
+1. For each variable, note its observed support and whether the distribution is skewed or discrete.
+2. Identify any values that should be checked against the data definition.
+
+#### Questions for discussion
+
+- What does the histogram tell you about a suitable imputation method for each variable?
+- What can this observed-value plot not tell you about the missing values?
+
+### 4.2 Are the incomplete covariates related to the outcome?
+
+The modeling colleague asks which incomplete covariates are related to relapse burden. This combined scatterplot asks whether the observed values relate to the outcome and whether the broad pattern looks different by treatment. A relationship can make the outcome useful in an imputation model and may suggest a functional form to investigate. It does not select the causal model or prove a missingness assumption.
+
+```{r}
+#| eval: false
+relationship_long <- data_obs %>%
+  select(y, treatment, all_of(incomplete_vars)) %>%
+  pivot_longer(all_of(incomplete_vars),
+               names_to = "variable", values_to = "value") %>%
+  filter(!is.na(value))
+
+ggplot(relationship_long, aes(value, y, colour = treatment)) +
+  geom_jitter(width = 0.08, height = 0.15, alpha = 0.12) +
+  geom_smooth(method = "loess", se = FALSE, linewidth = 0.7) +
+  scale_colour_manual(values = c(TERI = sdas_palette[["navy"]],
+                                DMF = sdas_palette[["green"]])) +
+  facet_wrap(~ variable, scales = "free_x", ncol = 1) +
+  labs(x = "Observed covariate value", y = "Relapse episodes (y)",
+       colour = "Treatment",
+       title = "Observed covariates and outcome") +
+  theme_minimal()
+```
+
+#### Your tasks
+
+1. Describe the broad direction and shape in each panel.
+2. Note a simple candidate transformation only if a clear pattern supports checking it.
+3. Do not add an interaction just because the treatment-specific curves differ slightly.
+
+#### Questions for discussion
+
+- Which incomplete variables appear related to the outcome, and why does that matter for imputation?
+- Do the plots establish a causal relationship or a missingness mechanism?
+
+## 5. Recommend a missing-data approach
+
+Use your audit and the supplied causal structure to complete the table. As possible explanations, consider whether observed gender could track a documentation pathway (MAR), or whether a missing cost could depend on its own unseen value (MNAR). The observed data cannot distinguish these explanations.
+
+### Your tasks
+
+1. Complete the table for complete-case analysis, multiple imputation, and another suitable method.
+2. Choose a primary approach and state its main assumption and limitation.
+
+| Approach | Why it may fit this analysis | Main assumption or limitation | Your decision |
+|---|---|---|---|
+| Complete-case analysis |  |  |  |
+| Multiple imputation |  |  |  |
+| Another appropriate method |  |  |  |
+
+### Questions for the research team
+
+- Which variables are incomplete, and what percentage is missing in each?
+- How many records are complete for all variables?
+- Do the incomplete variables tend to be missing separately or together?
+- Are missingness percentages similar across treatment groups? What can this comparison tell you, and what can it not tell you?
+
+### Questions for discussion
+
+- What additional study information would make the MAR explanation more credible?
+- Which sensitivity analysis could examine departures from MAR for medical cost?
+
+### Final task
+
+Write a short handoff note: recommend a primary approach, name its assumption, identify relationships the imputation model should preserve, and suggest one sensitivity analysis. Keep observations separate from possible explanations. The next practical, [Multiple Imputation Implementation](chapter10_homogeneous_treatment_effect_task.qmd), uses your handoff.

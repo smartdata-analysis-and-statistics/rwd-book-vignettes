@@ -1,0 +1,45 @@
+project:
+  type: website
+  output-dir: _site
+  render:
+    - index.qmd
+    - chapter10_exploration_task.qmd
+    - chapter10_exploration_solution.qmd
+    - chapter10_homogeneous_treatment_effect_task.qmd
+    - chapter10_homogeneous_treatment_effect_solution.qmd
+  resources:
+    - data/chapter10_exploration_data.rds
+    - figures/*.svg
+
+execute:
+  freeze: auto
+
+website:
+  title: "Chapter 10 practicals"
+  site-url: "https://smartdata-analysis-and-statistics.github.io/rwd-book-vignettes/"
+  repo-url: "https://github.com/smartdata-analysis-and-statistics/rwd-book-vignettes"
+  navbar:
+    left:
+      - href: index.qmd
+        text: Overview
+      - text: Data preparation and exploration
+        menu:
+          - href: chapter10_exploration_task.qmd
+            text: Learner task
+          - href: chapter10_exploration_solution.qmd
+            text: Worked solution
+      - text: Multiple imputation
+        menu:
+          - href: chapter10_homogeneous_treatment_effect_task.qmd
+            text: Learner task
+          - href: chapter10_homogeneous_treatment_effect_solution.qmd
+            text: Worked solution
+
+format:
+  html:
+    theme: cosmo
+    toc: true
+    toc-location: right
+    number-sections: false
+    code-copy: true
+    code-overflow: wrap

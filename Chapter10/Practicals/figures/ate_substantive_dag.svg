@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="500" viewBox="0 0 1120 500" role="img" aria-labelledby="title desc">
+  <title id="title">Substantive model DAG for the homogeneous treatment-effect practical</title>
+  <desc id="desc">The supplied baseline confounders age, gender, previous treatment efficacy, previous medical cost and previous relapse count affect treatment and relapse outcome. Symptom count predicts the outcome. Follow-up duration determines exposure time for the count outcome. Treatment affects the outcome.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#4b5563"/></marker>
+    <style>
+      .confounder { fill:#e8f5e9; stroke:#2e7d32; stroke-width:2; }
+      .treatment { fill:#e3f2fd; stroke:#1565c0; stroke-width:2; }
+      .outcome { fill:#fff3e0; stroke:#ef6c00; stroke-width:2; }
+      .auxiliary { fill:#f3e5f5; stroke:#6a1b9a; stroke-width:2; }
+      .edge { stroke:#4b5563; stroke-width:2; fill:none; marker-end:url(#arrow); }
+      text { font-family:Arial,sans-serif; font-size:15px; fill:#1f2937; }
+      .label { font-size:20px; font-weight:600; }
+    </style>
+  </defs>
+  <rect width="1120" height="500" fill="white"/>
+  <text x="560" y="32" text-anchor="middle" class="label">Substantive model for the population ATE</text>
+
+  <!-- Confounders point to both treatment and outcome. -->
+  <path class="edge" d="M245 91 C315 70 375 70 455 110"/>
+  <path class="edge" d="M245 153 C320 125 380 120 455 128"/>
+  <path class="edge" d="M245 215 C320 180 380 160 455 145"/>
+  <path class="edge" d="M245 277 C320 230 385 190 455 160"/>
+  <path class="edge" d="M245 339 C320 285 385 220 455 175"/>
+  <path class="edge" d="M245 98 C430 135 615 195 800 253"/>
+  <path class="edge" d="M245 158 C440 185 620 220 800 260"/>
+  <path class="edge" d="M245 220 C440 230 625 245 800 268"/>
+  <path class="edge" d="M245 280 C440 275 625 275 800 275"/>
+  <path class="edge" d="M245 340 C440 320 625 300 800 282"/>
+  <path class="edge" d="M665 112 C720 145 760 205 800 250"/>
+  <path class="edge" d="M665 385 C720 355 760 320 800 292"/>
+  <path class="edge" d="M690 385 C730 360 765 325 800 292"/>
+
+  <rect class="confounder" x="35" y="65" width="210" height="52" rx="8"/><text x="140" y="97" text-anchor="middle">Age</text>
+  <rect class="confounder" x="35" y="127" width="210" height="52" rx="8"/><text x="140" y="159" text-anchor="middle">Gender</text>
+  <rect class="confounder" x="35" y="189" width="210" height="52" rx="8"/><text x="140" y="221" text-anchor="middle">Previous DMT efficacy</text>
+  <rect class="confounder" x="35" y="251" width="210" height="52" rx="8"/><text x="140" y="283" text-anchor="middle">Log premedical cost</text>
+  <rect class="confounder" x="35" y="313" width="210" height="52" rx="8"/><text x="140" y="345" text-anchor="middle">Previous relapse count</text>
+  <rect class="treatment" x="455" y="80" width="210" height="64" rx="8"/><text x="560" y="108" text-anchor="middle">Treatment</text><text x="560" y="128" text-anchor="middle">DMF / TERI</text>
+  <rect class="auxiliary" x="455" y="355" width="210" height="60" rx="8"/><text x="560" y="391" text-anchor="middle">Follow-up years</text>
+  <rect class="auxiliary" x="690" y="350" width="210" height="60" rx="8"/><text x="795" y="386" text-anchor="middle">Number of symptoms</text>
+  <rect class="treatment" x="800" y="230" width="275" height="74" rx="8"/><text x="937" y="260" text-anchor="middle">Relapse count outcome (y)</text><text x="937" y="283" text-anchor="middle">offset(log(years))</text>
+  <text x="560" y="465" text-anchor="middle">Adjustment set: age, gender, previous DMT efficacy, log premedical cost, and previous relapse count.</text>
+</svg>

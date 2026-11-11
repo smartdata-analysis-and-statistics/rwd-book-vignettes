@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="390" viewBox="0 0 900 390" role="img" aria-labelledby="title desc">
+  <title id="title">Hypothetical MNAR departure for the log-cost sensitivity analysis</title>
+  <desc id="desc">Fully observed treatment, gender, symptoms, outcome and follow-up predict whether log cost is observed under the MAR reference. The sensitivity analysis considers a hypothetical additional dependence of cost missingness on the unobserved true cost. True cost and its missingness indicator determine observed cost.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#4b5563"/></marker>
+    <style>
+      .observed { fill: #e3f2fd; stroke: #1565c0; stroke-width: 2; }
+      .indicator { fill: #fff3e0; stroke: #ef6c00; stroke-width: 2; }
+      .value { fill: #e8f5e9; stroke: #2e7d32; stroke-width: 2; }
+      .edge { stroke: #4b5563; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+      text { font-family: Arial, sans-serif; font-size: 17px; fill: #1f2937; }
+      .label { font-size: 20px; font-weight: 600; }
+    </style>
+  </defs>
+  <rect width="900" height="390" fill="white"/>
+  <text x="450" y="32" text-anchor="middle" class="label">Hypothetical MNAR departure for log-cost sensitivity</text>
+
+  <path class="edge" d="M300 120 H325 V267 H350"/>
+  <path class="edge" d="M560 112 H700"/>
+  <path class="edge" d="M455 145 V230"/>
+  <path class="edge" d="M560 267 H640 V112 H700"/>
+
+  <rect class="observed" x="30" y="75" width="270" height="95" rx="8"/>
+  <text x="165" y="102" text-anchor="middle">Fully observed predictors</text>
+  <text x="165" y="126" text-anchor="middle">Treatment, gender, symptoms</text>
+  <text x="165" y="150" text-anchor="middle">Outcome y, follow-up years</text>
+  <rect class="observed" x="350" y="80" width="210" height="65" rx="8"/>
+  <text x="455" y="118" text-anchor="middle">True log medical cost</text>
+  <rect class="indicator" x="350" y="230" width="210" height="75" rx="8"/>
+  <text x="455" y="262" text-anchor="middle">R_cost</text>
+  <text x="455" y="285" text-anchor="middle">(observed or missing)</text>
+  <rect class="value" x="700" y="80" width="170" height="65" rx="8"/>
+  <text x="785" y="118" text-anchor="middle">Observed cost</text>
+
+  <text x="450" y="355" text-anchor="middle">The cost → R_cost arrow is the hypothetical MNAR departure varied by delta.</text>
+</svg>

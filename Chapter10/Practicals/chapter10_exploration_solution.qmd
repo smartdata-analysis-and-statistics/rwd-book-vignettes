@@ -1,0 +1,323 @@
+---
+title: "Dealing with Missing Data: Data Preparation and Exploration"
+subtitle: "Computer Practical Solution"
+author:
+  - name: "Thomas Debray"
+    affiliation: "Smart Data Analysis and Statistics"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    toc-location: right
+    number-sections: false
+execute:
+  echo: true
+  warning: false
+  message: false
+editor:
+  markdown:
+    wrap: sentence
+---
+
+::: {.callout-note title="How to use this solution"}
+The practical: inspect the shared dataset, summarize missingness, check targeted relationships, and then decide what to do. The exploration and homogeneous treatment-effect practicals load the same 3,000-patient dataset. Each of the two plots has one stated purpose; neither can determine the missingness mechanism.
+:::
+
+## The case: preparing a treatment-effect analysis
+
+The team is comparing DMF with TERI, but age, log premedical cost, and previous relapse count are incomplete. This audit identifies what the observed data can tell us and what the imputation analyst should preserve. The supplied adjustment set defines the causal analysis; exploration helps plan imputation, not redefine the question.
+
+# 1. Clarify the question before exploring
+
+The estimand is the population ATE, $E(Y^{DMF} - Y^{TERI})$. The supplied adjustment set is `age`, `gender`, `prevDMTefficacy`, `logPremedicalcost`, and `prerelapseNum`. The substantive model also includes `numSymptoms` and adjusts for follow-up using `offset(log(years))`.
+
+### Your tasks
+
+1. State the treatment, outcome, follow-up period, and target estimand in your own words.
+2. Identify the supplied confounders and list any additional observed variables that could help impute incomplete values.
+
+### Questions for discussion
+
+- Why should exploratory associations not be used to redefine the supplied causal adjustment set?
+- How can an auxiliary predictor help imputation without being a confounder in the treatment-effect analysis?
+
+::: {.callout-tip title="Comments on the tasks and discussion answers"}
+**Task 1.** The treatment is DMF versus TERI; the outcome is the number of relapses (`y`) during the observed follow-up (`years`). The target is the population ATE, $E(Y^{DMF} - Y^{TERI})$, the average difference in expected relapse episodes if everyone in the target population received DMF rather than TERI. The outcome model accounts for different follow-up times with `offset(log(years))`.
+
+**Task 2.** The supplied confounders are `age`, `gender`, `prevDMTefficacy`, `logPremedicalcost`, and `prerelapseNum`. Other useful imputation predictors include `treatment`, `y`, `years` (represented as `logyears` where appropriate), and `numSymptoms`.
+
+**Question: Why should exploratory associations not redefine the supplied causal adjustment set?** The adjustment set follows the study's causal design. Observed associations can be confounded, driven by chance, or reflect selection, so they are not sufficient grounds for adding or removing confounders.
+
+**Question: How can an auxiliary predictor help imputation without being a confounder?** It can predict an incomplete value or its missingness and improve imputation, even if it does not cause treatment and outcome and therefore is not needed in the causal adjustment set.
+:::
+
+# 2. Load and inspect the data
+
+```{r}
+#| eval: true
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(mice)
+
+sdas_palette <- c(navy = "#26476b", green = "#80c42b", muted = "#5d6873")
+
+data_obs <- readRDS("data/chapter10_exploration_data.rds")
+
+dim(data_obs)
+str(data_obs)
+summary(data_obs)
+anyDuplicated(data_obs)
+```
+
+### Your tasks
+
+1. Run the basic checks below.
+2. Record variable types, unexpected ranges or categories, and whether any duplicate rows were found.
+3. Note which provenance questions cannot be answered from this file.
+
+### Questions for discussion
+
+- Which data-quality checks can you complete from this file?
+- What missing-data context would you ask the data team to provide?
+
+::: {.callout-tip title="Comments on the tasks and discussion answers"}
+**Task 1.** The basic checks are `dim()`, `str()`, `summary()`, and `anyDuplicated()`; they report 3,000 rows, 9 columns, variable structure and summaries, and no exact duplicate rows.
+
+**Task 2.** `treatment`, `gender`, and `prevDMTefficacy` are factors; `y` and `prerelapseNum` are integers; the remaining variables are numeric. The observed values are within the teaching generator's support, with no unexpected categories evident in the summaries.
+
+**Task 3.** The file does not record sites, source systems, measurement or linkage processes, or reasons for missingness.
+
+**Question: Which data-quality checks can you complete from this file?** We can check dimensions, types, ranges, summary values, categories, missingness, and exact duplicate rows. These checks do not validate the source records or explain why a value is missing.
+
+**Question: What context should you request from the data team?** Ask how each variable was collected and linked, why values may be absent, whether the process differs by site or source system, and whether auxiliary variables record these processes.
+:::
+
+# 3. Describe the missing values
+
+```{r}
+#| eval: true
+incomplete_vars <- names(data_obs)[vapply(data_obs, anyNA, logical(1))]
+
+missing_summary <- tibble(
+  variable = incomplete_vars,
+  missing_n = colSums(is.na(data_obs[incomplete_vars])),
+  missing_percent = round(100 * colMeans(is.na(data_obs[incomplete_vars])), 1)
+)
+missing_summary
+
+n_incomplete <- sum(!complete.cases(data_obs))
+tibble(
+  complete_records = nrow(data_obs) - n_incomplete,
+  incomplete_records = n_incomplete,
+  incomplete_percent = round(100 * n_incomplete / nrow(data_obs), 1)
+)
+```
+
+`age` has **92 missing values (3.1%)**, `logPremedicalcost` has **346 (11.5%)**, and `prerelapseNum` has **94 (3.1%)**. Overall, **505 records (16.8%)** have at least one missing value.
+
+The next table answers a different question from the count table: which incomplete variables tend to be missing together?
+
+```{r}
+#| eval: true
+pattern_data <- data_obs %>%
+  transmute(Age = age, Cost = logPremedicalcost,
+            Relapse = prerelapseNum)
+mice::md.pattern(pattern_data, plot = TRUE)
+```
+
+::: {.callout-tip title="Interpret the missingness pattern"}
+Most records (**2,495**) are complete for all three incomplete variables. Missingness in `logPremedicalcost` alone occurs in **321** records; `prerelapseNum` alone in **85**; and `age` alone in **72**. The remaining patterns involve two or all three variables. Keep these joint patterns in mind when choosing a multivariable imputation procedure; do not impute each variable in isolation.
+:::
+
+Compare observed missingness percentages by treatment:
+
+```{r}
+#| eval: true
+data_obs %>%
+  group_by(treatment) %>%
+  summarise(
+    across(all_of(incomplete_vars), ~ round(100 * mean(is.na(.x)), 1)),
+    .groups = "drop"
+  )
+```
+
+### Your tasks
+
+1. Count missing values and percentages for each incomplete variable.
+2. Count records with any missing values and records complete on all variables.
+3. Use the pattern table to describe which incomplete variables tend to be missing together.
+4. Compare missingness percentages by treatment group.
+
+### Questions for the research team
+
+- Which variables are incomplete, and what percentage is missing in each?
+- How many records are complete for all variables?
+- Do the incomplete variables tend to be missing separately or together?
+- Are missingness percentages similar across treatment groups? What can this comparison tell you, and what can it not tell you?
+
+### Questions for discussion
+
+- Does a difference in missingness by treatment prove that treatment caused values to be missing?
+- Can these summaries distinguish MAR from MNAR? Why or why not?
+
+::: {.callout-tip title="Comments on the tasks and discussion answers"}
+**Task 1.** Missingness is: age, **92 (3.1%)**; log premedical cost, **346 (11.5%)**; previous relapse count, **94 (3.1%)**.
+
+**Task 2.** **505 records (16.8%)** have at least one missing value; **2,495** are complete on all variables.
+
+**Task 3.** Missing values occur both separately and together. The pattern table shows 321 records missing only cost, 85 missing only previous relapse count, and 72 missing only age; the remaining incomplete records have combinations of missing variables.
+
+**Task 4.** Missingness is more frequent in TERI than DMF for age (**3.4% vs 2.9%**), cost (**13.0% vs 11.0%**), and previous relapses (**3.3% vs 3.1%**).
+
+**Research question: Which variables are incomplete and how much is missing?** Age is missing in 92 records (3.1%), cost in 346 (11.5%), and previous relapse count in 94 (3.1%).
+
+**Research question: How many records are complete?** There are 2,495 complete records.
+
+**Research question: Are values missing separately or together?** Both occur: the three single-variable patterns above are present, as are joint patterns involving two or three variables.
+
+**Research question: Are rates similar by treatment, and what does that tell us?** No. Rates are higher in TERI for all three variables. Treatment may therefore be a useful predictor of missingness and should be included in imputation. This comparison does not show that treatment caused missingness or identify the missingness mechanism.
+
+**Question: Does a difference by treatment prove that treatment caused values to be missing?** No. The difference is an observed association; other variables or data-collection processes may explain it.
+
+**Question: Can these summaries distinguish MAR from MNAR?** No. They describe observed missingness patterns but cannot show whether missingness depends on an unobserved value after conditioning on observed information.
+:::
+
+# 4. Explore the incomplete variables
+
+## 4.1 What do the observed values look like?
+
+The histogram's purpose is to inspect observed support and shape before choosing a method suitable for each variable.
+
+```{r}
+#| eval: true
+observed_long <- data_obs %>%
+  select(all_of(incomplete_vars)) %>%
+  pivot_longer(everything(), names_to = "variable", values_to = "value") %>%
+  filter(!is.na(value))
+
+ggplot(observed_long, aes(value)) +
+  geom_histogram(binwidth = 0.5, boundary = -0.25,
+                 fill = sdas_palette[["navy"]], colour = "white") +
+  facet_wrap(~ variable, scales = "free", ncol = 1) +
+  labs(x = NULL, y = "Observed records",
+       title = "Observed distributions of incomplete variables") +
+  theme_minimal()
+```
+
+#### Your tasks
+
+1. For each variable, note its observed support and whether the distribution is skewed or discrete.
+2. Identify any values that should be checked against the data definition.
+
+#### Questions for discussion
+
+- What does the histogram tell you about a suitable imputation method for each variable?
+- What can this observed-value plot not tell you about the missing values?
+
+::: {.callout-tip title="Comments on the tasks and discussion answers"}
+**Task 1.** Age is continuous and spans the generator's 18–64 support without an endpoint pile-up. Log cost is continuous and roughly unimodal. Previous relapse count is discrete, concentrated at zero and one, with fewer larger counts.
+
+**Task 2.** No value falls outside the generator's expected support in this dataset. In an applied dataset, verify all apparent extremes against the data dictionary before deciding whether they are errors.
+
+**Question: What does the histogram suggest about imputation methods?** Use methods that respect each variable's support. PMM is a reasonable starting point for these numeric variables because it draws observed donor values; inspect whether the imputed relapse counts remain integer-valued and plausible.
+
+**Question: What can this plot not tell you?** It shows only observed values. It cannot reveal the distribution of missing values, confirm that missing and observed values are comparable, or rule out selection bias.
+:::
+
+## 4.2 Are the incomplete covariates related to the outcome?
+
+This one combined figure checks whether observed covariate values have a broad association with the outcome and whether the pattern appears different across treatment groups. It is a predictor-screening and functional-form aid, not a causal test.
+
+```{r}
+#| eval: true
+relationship_long <- data_obs %>%
+  select(y, treatment, all_of(incomplete_vars)) %>%
+  pivot_longer(all_of(incomplete_vars),
+               names_to = "variable", values_to = "value") %>%
+  filter(!is.na(value))
+
+ggplot(relationship_long, aes(value, y, colour = treatment)) +
+  geom_jitter(width = 0.08, height = 0.15, alpha = 0.12) +
+  geom_smooth(method = "loess", se = FALSE, linewidth = 0.7) +
+  scale_colour_manual(values = c(TERI = sdas_palette[["navy"]],
+                                DMF = sdas_palette[["green"]])) +
+  facet_wrap(~ variable, scales = "free_x", ncol = 1) +
+  labs(x = "Observed covariate value", y = "Relapse episodes (y)",
+       colour = "Treatment",
+       title = "Observed covariates and outcome") +
+  theme_minimal()
+```
+
+#### Your tasks
+
+1. Describe the broad direction and shape in each panel.
+2. Note a simple candidate transformation only if a clear pattern supports checking it.
+3. Do not add an interaction just because the treatment-specific curves differ slightly.
+
+#### Questions for discussion
+
+- Which incomplete variables appear related to the outcome, and why does that matter for imputation?
+- Do the plots establish a causal relationship or a missingness mechanism?
+
+::: {.callout-tip title="Comments on the tasks and discussion answers"}
+**Task 1.** Each incomplete covariate has a broad positive association with relapse count. The previous-relapse smoother is less reliable at high counts because few observations occur there.
+
+**Task 2.** The figure does not show a clear pattern that requires a transformation. Treat any proposed transformation as a candidate to assess against the substantive model and data-generating knowledge.
+
+**Task 3.** Small differences between treatment-specific smoothers are not enough evidence for an interaction; retain the supplied model unless the study rationale or stronger evidence supports changing it.
+
+**Question: Which covariates appear related to the outcome, and why does that matter?** Age, log cost, and previous relapse count all appear positively related to `y`. Including `y` in their imputation models helps preserve the associations between incomplete covariates and the outcome.
+
+**Question: Do these plots establish causality or a missingness mechanism?** No. They display observed associations only; they do not establish causal effects or explain why values are missing.
+:::
+
+# 5. Recommend a missing-data approach
+
+Use your audit and the supplied causal structure to complete the table. As possible explanations, consider whether observed gender could track a documentation pathway (MAR), or whether a missing cost could depend on its own unseen value (MNAR). The observed data cannot distinguish these explanations.
+
+| Approach | Why it may fit this analysis | Main assumption or limitation | Your decision |
+|---|---|---|---|
+| Complete-case analysis | Simple benchmark using records complete on the analysis variables | Excludes 505 records; unbiasedness depends on the selection process and causal structure | Not primary; may be a sensitivity comparison |
+| Multiple imputation | Retains incomplete records and propagates imputation uncertainty for missing confounders | Requires a plausible MAR model conditional on included variables and compatibility with the substantive model | Preferred candidate under an explicit MAR assumption |
+| Likelihood-based or specialized method | May fit some incomplete-outcome or structured-data settings | Must match the incomplete variables and estimand; observed summaries do not establish its assumptions | Consider if additional design or process knowledge supports it |
+
+### Your tasks
+
+1. Complete the table for complete-case analysis, multiple imputation, and another suitable method.
+2. Choose a primary approach and state its main assumption and limitation.
+
+### Questions for discussion
+
+- What additional study information would make the MAR explanation more credible?
+- Which sensitivity analysis could examine departures from MAR for medical cost?
+
+::: {.callout-tip title="Comments on the tasks and discussion answers"}
+**Task 1.** The completed table should identify complete-case analysis as a simple benchmark that excludes 505 records; multiple imputation as a way to retain incomplete records while representing imputation uncertainty; and a likelihood-based or specialized approach as an option only if its assumptions fit these incomplete covariates and the estimand.
+
+**Task 2.** A reasonable primary candidate is multiple imputation under an explicit MAR working assumption, using an analysis-compatible model. Its limitation is that observed data cannot verify MAR and a misspecified imputation model can bias results.
+
+**Question: What information would make MAR more credible?** Ask about collection and linkage procedures, reasons values are unavailable, differences by site or source system, and observed auxiliary measures that predict either the missingness or the incomplete value. This evidence can support the assumption, but cannot prove it.
+
+**Question: Which sensitivity analysis could examine departures from MAR for cost?** Apply delta adjustments to the imputed log costs, shifting missing values up or down relative to their MAR predictions, then repeat the treatment-effect analysis across a prespecified plausible range.
+:::
+
+### Final task
+
+Write a short handoff note to the imputation analyst. State the primary approach, its assumptions, which variables and relationships the imputation model should preserve, and one useful sensitivity analysis. Separate what you observed from the team's possible explanations for missingness. Use the supplied adjustment set; do not use exploratory plots to redefine the causal question.
+
+::: {.callout-tip title="Comments on the final task"}
+**Primary approach and assumption:** Use multiple imputation under a clearly stated MAR working assumption, with treatment, outcome, follow-up, all substantive-model variables, and useful auxiliary predictors. Choose methods that respect each variable's support and preserve relationships needed by the causal analysis.
+
+**Observed evidence:** Age, log cost, and previous relapse count are incomplete; missingness differs by treatment; the observed distributions and associations inform model planning.
+
+**Sensitivity analysis:** The observed audit does not establish MAR. Ask the data team about collection and missingness processes, and assess departures from MAR for log cost with delta-adjusted imputations. Keep the supplied causal adjustment set unchanged.
+:::
+
+The next practical, [Multiple Imputation Implementation](chapter10_homogeneous_treatment_effect_task.qmd), uses this handoff.
+
+### The team's missingness assumptions
+
+**MAR:** Records may be less complete along some documentation pathways, and observed gender may help predict those pathways.
+
+**MNAR:** Very expensive care might happen outside the data-contributing system, making high costs more likely to be missing. If missingness depends on the unseen cost after accounting for observed data, this is MNAR.

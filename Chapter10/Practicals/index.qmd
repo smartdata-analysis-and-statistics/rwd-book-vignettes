@@ -1,0 +1,35 @@
+---
+title: "Chapter 10 practicals"
+subtitle: "Dealing with Missing Data"
+format:
+  html:
+    toc: true
+    number-sections: false
+---
+
+These practicals use a simulated real-world study of dimethyl fumarate (`DMF`) versus teriflunomide (`TERI`) in 3,000 patients with multiple sclerosis. The outcome is the number of relapse episodes over follow-up. Baseline characteristics—including age, gender, prior treatment efficacy, prior medical costs, and relapse history—help control confounding, but some are deliberately incomplete.
+
+The practicals build from data preparation and missingness exploration to multiple imputation and treatment-effect estimation. They distinguish variables required by the causal adjustment set from auxiliary information that can help predict missing values, and consider how conclusions depend on assumptions about why data are missing (MCAR, MAR, or MNAR). The datasets supplied here are simulated teaching data, not patient records; this allows the exercises to illustrate missingness and confounding while keeping the source data reproducible. Each practical is provided as a Quarto source file (`.qmd`), with learner tasks and worked solutions kept in separate files.
+
+## Practical sequence
+
+Work through the learner versions in order. Open a solution after attempting the corresponding task.
+
+| Topic | Learner task | Worked solution |
+|---|---|---|
+| Data preparation and exploration | [Task](chapter10_exploration_task.qmd) | [Solution](chapter10_exploration_solution.qmd) |
+| Multiple imputation implementation | [Task](chapter10_homogeneous_treatment_effect_task.qmd) | [Solution](chapter10_homogeneous_treatment_effect_solution.qmd) |
+
+## Source and supporting files
+
+- [Shared R helper functions](chapter10_helpers.R) generate teaching data and missingness scenarios used by the practicals.
+- [Substantive-model DAG](figures/ate_substantive_dag.svg) and [imputation-model DAG](figures/imputation_dag.svg) are the practical figures.
+- Chapter datasets, codebooks, and generation scripts are maintained in the [Chapter 10 data README](https://github.com/smartdata-analysis-and-statistics/rwd-book-vignettes/blob/main/Chapter10/data/README.md).
+
+## File formats
+
+- **`.qmd`** — editable practical source, combining instructions, prose, and R code chunks; Quarto renders it as HTML.
+- **`.R`** — reusable R functions sourced by the practicals.
+- **`.svg`** — scalable figures included in the teaching materials.
+
+Generated website files and rendered figures are build outputs; edit the source files above when changing practical content.

@@ -27,18 +27,16 @@ This first practical compares the baseline characteristics of patients receiving
 
 These practicals use the `generate_data()` simulator supplied for this work, with the same multiple-sclerosis covariates, treatment, relapse-count outcome, follow-up time, and `Iscore` structure shown in the reference chapter. The simulator documentation says treatment is randomized, but its implementation assigns treatment using a logistic model of baseline covariates. That implementation is observational, which makes it suitable for teaching propensity-score adjustment. The generated cohort is saved once as an RDS file and reused in every practical.
 
-# 1. Learning objectives
+## Learning objectives
 
 By completing this practical, you will be able to:
 
-- summarize and compare baseline characteristics by treatment group;
-- estimate a propensity score using logistic regression;
-- inspect overlap in propensity-score distributions; and
-- explain why balance, overlap, and the target estimand matter more than treatment-prediction accuracy.
+- summarize and compare baseline characteristics by treatment group using appropriate descriptive measures;
+- use standardized mean differences to describe measured-covariate imbalance without baseline hypothesis tests;
+- estimate a propensity score using logistic regression with prespecified pretreatment covariates; and
+- inspect propensity-score overlap and explain why treatment-prediction accuracy alone does not establish a suitable adjustment model.
 
-# 2. Methods based on the propensity score
-
-The propensity score (PS) summarizes each patient's probability of receiving treatment given measured baseline characteristics. It can be used in several ways to make treated and untreated groups more comparable. In this practical, you will inspect the baseline data and estimate the PS. The next practicals show how to apply it using matching (Practical 2), stratification (Practical 3), weighting (Practical 4), and regression adjustment for the propensity score (Practical 5). Each method has different assumptions and diagnostics; those will be introduced alongside the method where they are used.
+# 1. Prepare and compare the baseline data
 
 
 ```{r}
@@ -93,6 +91,10 @@ print(baseline_table)
 #| eval: false
 bal.tab(ps_formula, data = dat, un = TRUE)
 ```
+
+# 2. Methods based on the propensity score
+
+The propensity score (PS) summarizes each patient's probability of receiving treatment given measured baseline characteristics. It can be used in several ways to make treated and untreated groups more comparable. In this practical, you will inspect the baseline data and estimate the PS. The next practicals show how to apply it using matching (Practical 2), stratification (Practical 3), weighting (Practical 4), and regression adjustment for the propensity score (Practical 5). Each method has different assumptions and diagnostics; those will be introduced alongside the method where they are used.
 
 4. Fit the supplied logistic treatment model and calculate a predicted treatment probability for each participant.
 ```{r}

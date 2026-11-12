@@ -1,7 +1,48 @@
 ---
-title: "RWD Book Vignettes"
+title: "Comparative effectiveness practicals"
+subtitle: "Exploring and analyzing real-world data with missing values"
+author:
+  - name: "Smart Data Analysis and Statistics"
+date: "2026"
+format:
+  html:
+    toc: true
+    toc-depth: 2
+    toc-location: right
+    number-sections: false
 ---
 
 # Welcome
 
-This website contains practical vignettes for real-world data analysis.
+This site brings together practicals on comparative effectiveness with real-world data. Chapter 3 focuses on confounding adjustment with propensity scores; Chapter 10 focuses on missing-data exploration and multiple imputation. Each topic includes learner tasks and worked solutions.
+
+Each practical has a task page to work through and a separate worked solution.
+
+## Chapter 3: Confounding adjustment using propensity scores
+
+Work through the practicals in sequence. They use a shared simulated cohort to estimate treatment effects using different propensity-score methods.
+
+| Practical | Focus | Task | Worked solution |
+|---|---|---|---|
+| Baseline comparison and propensity-score estimation | Inspect the cohort, estimate propensity scores, and assess overlap and balance. | [Open the task](Chapter_3/chapter3_practical1_task.html) | [Open the solution](Chapter_3/chapter3_practical1_solution.html) |
+| Propensity-score matching | Match participants and estimate the ATT. | [Open the task](Chapter_3/chapter3_practical2_task.html) | [Open the solution](Chapter_3/chapter3_practical2_solution.html) |
+| Propensity-score stratification | Estimate treatment effects within propensity-score strata. | [Open the task](Chapter_3/chapter3_practical3_task.html) | [Open the solution](Chapter_3/chapter3_practical3_solution.html) |
+| Propensity-score weighting | Estimate treatment effects with propensity-score weights. | [Open the task](Chapter_3/chapter3_practical4_task.html) | [Open the solution](Chapter_3/chapter3_practical4_solution.html) |
+| Regression adjustment for the propensity score | Adjust the outcome model for the estimated propensity score. | [Open the task](Chapter_3/chapter3_practical5_task.html) | [Open the solution](Chapter_3/chapter3_practical5_solution.html) |
+
+## Chapter 10: Missing data
+
+These practicals explore incomplete study data and use multiple imputation before estimating treatment effects.
+
+Work through the activities in order: **Exploration** builds familiarity with the study data and missingness; **Multiple imputation** uses those findings to specify and assess an imputation model, then compares treatment-effect analyses.
+
+| Practical | Focus | Task | Worked solution |
+|---|---|---|---|
+| **Exploration** | Understand the study variables, inspect missingness, and prepare for the analysis. | [Open the task](Chapter10/Practicals/chapter10_exploration_task.html) | [Open the solution](Chapter10/Practicals/chapter10_exploration_solution.html) |
+| **Multiple imputation** | Impute missing data under a MAR model, check the imputation, pool treatment-effect estimates, and explore an MNAR sensitivity analysis for log medical cost. | [Open the task](Chapter10/Practicals/chapter10_homogeneous_treatment_effect_task.html) | [Open the solution](Chapter10/Practicals/chapter10_homogeneous_treatment_effect_solution.html) |
+
+## Getting started
+
+Install [R](https://cran.r-project.org/) and [RStudio](https://posit.co/download/rstudio-desktop/). Start with a practical's task page before opening its worked solution. The task pages include R code and instructions. Keep the supplied data files in the practical project directory when running the code locally.
+
+The examples use observational data, so the results illustrate an analysis workflow and depend on the assumptions described in the practicals. In particular, multiple imputation does not by itself remove bias: the imputation model and assumptions about the missingness process matter.

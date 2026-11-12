@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 650" role="img" aria-labelledby="title desc">
+  <title id="title">Propensity score stratification for the ATT</title>
+  <desc id="desc">The propensity score range is divided into five strata, from lower scores in Q1 to higher scores in Q5. Patient dots grow larger as propensity scores increase. DMT1 and DMT0 patients are compared within each stratum, then stratum effects are pooled using the treated-group distribution to estimate the ATT.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#26476b"/></marker>
+    <style>
+      text{font-family:Arial,Helvetica,sans-serif;fill:#212529}.title{font-size:30px;font-weight:700;fill:#26476b}.sub{font-size:17px;fill:#5d6873}.head{font-size:20px;font-weight:700;fill:#26476b}.body{font-size:16px}.small{font-size:14px;fill:#5d6873}.panel{fill:#fff;stroke:#d8e1e8;stroke-width:2}.soft{fill:#eef4f8;stroke:#26476b;stroke-width:2}.focus{fill:#f3f9e9;stroke:#80c42b;stroke-width:2}.navy{fill:#26476b;stroke:#26476b;stroke-width:2}.green{fill:#80c42b;stroke:#5c8f18;stroke-width:2}.line{stroke:#26476b;stroke-width:3;fill:none;marker-end:url(#arrow)}.divider{stroke:#d8e1e8;stroke-width:2;stroke-dasharray:5 5}
+    </style>
+  </defs>
+  <rect width="1180" height="650" rx="18" fill="#fff"/>
+  <text x="590" y="48" text-anchor="middle" class="title">Propensity score stratification | ATT</text>
+  <text x="590" y="77" text-anchor="middle" class="sub">Compare DMT1 and DMT0 within similar score bands, then pool for the treated group</text>
+  <rect x="34" y="112" width="594" height="420" rx="16" class="panel"/>
+  <rect x="660" y="112" width="245" height="420" rx="16" class="soft"/>
+  <rect x="937" y="112" width="209" height="420" rx="16" class="focus"/>
+  <text x="331" y="150" text-anchor="middle" class="head">1. Divide the PS range into strata</text>
+  <text x="331" y="179" text-anchor="middle" class="small">Five PS quintiles; larger dots represent higher propensity scores</text>
+  <rect x="60" y="210" width="106" height="190" rx="10" fill="#f8fafb" stroke="#d8e1e8"/>
+  <rect x="166" y="210" width="106" height="190" fill="#eef4f8" stroke="#d8e1e8"/>
+  <rect x="272" y="210" width="106" height="190" fill="#f8fafb" stroke="#d8e1e8"/>
+  <rect x="378" y="210" width="106" height="190" fill="#eef4f8" stroke="#d8e1e8"/>
+  <rect x="484" y="210" width="106" height="190" rx="10" fill="#f8fafb" stroke="#d8e1e8"/>
+  <text x="113" y="235" text-anchor="middle" class="small">Q1</text><text x="219" y="235" text-anchor="middle" class="small">Q2</text><text x="325" y="235" text-anchor="middle" class="small">Q3</text><text x="431" y="235" text-anchor="middle" class="small">Q4</text><text x="537" y="235" text-anchor="middle" class="small">Q5</text>
+  <circle cx="88" cy="275" r="6" class="navy"/><circle cx="136" cy="305" r="7" class="navy"/>
+  <circle cx="194" cy="275" r="8" class="navy"/><circle cx="244" cy="305" r="9" class="navy"/>
+  <circle cx="300" cy="275" r="10" class="navy"/><circle cx="350" cy="305" r="11" class="navy"/>
+  <circle cx="406" cy="275" r="12" class="navy"/><circle cx="456" cy="305" r="13" class="navy"/>
+  <circle cx="512" cy="275" r="14" class="navy"/><circle cx="562" cy="305" r="15" class="navy"/>
+  <circle cx="88" cy="345" r="7" class="green"/><circle cx="136" cy="375" r="6" class="green"/>
+  <circle cx="194" cy="345" r="9" class="green"/><circle cx="244" cy="375" r="8" class="green"/>
+  <circle cx="300" cy="345" r="11" class="green"/><circle cx="350" cy="375" r="10" class="green"/>
+  <circle cx="406" cy="345" r="13" class="green"/><circle cx="456" cy="375" r="12" class="green"/>
+  <circle cx="512" cy="345" r="15" class="green"/><circle cx="562" cy="375" r="14" class="green"/>
+  <circle cx="105" cy="447" r="6" class="navy"/><text x="120" y="452" class="small">Lower PS</text>
+  <circle cx="245" cy="447" r="14" class="navy"/><text x="266" y="452" class="small">Higher PS</text>
+  <text x="325" y="493" text-anchor="middle" class="small">Both treatments should be represented in each band</text>
+  <path d="M634 322 H652" class="line"/>
+  <text x="782" y="150" text-anchor="middle" class="head">2. Pool by treated share</text>
+  <text x="690" y="218" class="body">Q1</text><rect x="735" y="202" width="35" height="18" rx="5" fill="#80c42b"/><text x="785" y="218" class="small">smaller share</text>
+  <text x="690" y="269" class="body">Q2</text><rect x="735" y="253" width="55" height="18" rx="5" fill="#80c42b"/><text x="805" y="269" class="small">treated share</text>
+  <text x="690" y="320" class="body">Q3</text><rect x="735" y="304" width="78" height="18" rx="5" fill="#80c42b"/><text x="827" y="320" class="small">sets weight</text>
+  <text x="690" y="371" class="body">Q4</text><rect x="735" y="355" width="58" height="18" rx="5" fill="#80c42b"/><text x="808" y="371" class="small">for each band</text>
+  <text x="690" y="422" class="body">Q5</text><rect x="735" y="406" width="42" height="18" rx="5" fill="#80c42b"/><text x="792" y="422" class="small">of all DMT1</text>
+  <text x="782" y="476" text-anchor="middle" class="small">Weights add to 1 across strata</text>
+  <path d="M911 322 H929" class="line"/>
+  <text x="1041" y="150" text-anchor="middle" class="head">3. ATT estimate</text>
+  <circle cx="1000" cy="222" r="15" class="navy"/><circle cx="1041" cy="222" r="15" class="green"/>
+  <text x="1021" y="270" text-anchor="middle" class="body">Pooled DMT1/DMT0</text>
+  <text x="1021" y="294" text-anchor="middle" class="body">relapse-rate contrast</text>
+  <rect x="961" y="340" width="160" height="80" rx="12" fill="#fff" stroke="#80c42b" stroke-width="2"/>
+  <text x="1041" y="373" text-anchor="middle" class="head">ATT</text>
+  <text x="1041" y="399" text-anchor="middle" class="small">treated distribution</text>
+  <circle cx="78" cy="585" r="12" class="navy"/><text x="100" y="591" class="body">DMT1 (treated)</text><circle cx="275" cy="585" r="12" class="green"/><text x="297" y="591" class="body">DMT0 (control)</text>
+  <text x="1144" y="592" text-anchor="end" class="small">ATT = average treatment effect among treated</text>
+</svg>

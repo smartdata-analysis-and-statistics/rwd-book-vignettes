@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="500" viewBox="0 0 1200 500" role="img" aria-labelledby="title desc">
+  <title id="title">Propensity-score regression adjustment for the ATT</title>
+  <desc id="desc">Pretreatment covariates estimate each patient's propensity score. A Poisson outcome model includes treatment, propensity score, and log follow-up as an offset. For each treated patient, predict outcomes under DMT1 and DMT0, then average the rate contrasts to estimate the ATT.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L10,5 L0,10 z" fill="#526273"/>
+    </marker>
+    <style>
+      .title { font: 700 23px Arial, sans-serif; fill: #172b4d; }
+      .step { font: 700 15px Arial, sans-serif; fill: #526273; letter-spacing: .4px; }
+      .head { font: 700 18px Arial, sans-serif; fill: #172b4d; }
+      .body { font: 15px Arial, sans-serif; fill: #263746; }
+      .formula { font: 15px Arial, sans-serif; fill: #172b4d; }
+      .small { font: 13px Arial, sans-serif; fill: #526273; }
+      .box { fill: #f6f8fa; stroke: #9aa9b8; stroke-width: 1.5; rx: 12; }
+      .arrow { fill: none; stroke: #526273; stroke-width: 2; marker-end: url(#arrow); }
+    </style>
+  </defs>
+  <rect width="1200" height="500" fill="#ffffff"/>
+  <text x="600" y="38" text-anchor="middle" class="title">Propensity-score regression adjustment for the ATT</text>
+
+  <text x="145" y="84" text-anchor="middle" class="step">1 · ESTIMATE PS</text>
+  <rect x="35" y="105" width="220" height="140" class="box"/>
+  <text x="145" y="137" text-anchor="middle" class="head">Pretreatment covariates</text>
+  <text x="145" y="166" text-anchor="middle" class="body">age · sex · prior efficacy</text>
+  <text x="145" y="190" text-anchor="middle" class="body">prior relapses · symptoms</text>
+  <text x="145" y="222" text-anchor="middle" class="formula">e(X) = Pr(DMT1 | X)</text>
+
+  <path d="M260 175 H315" class="arrow"/>
+  <text x="422" y="84" text-anchor="middle" class="step">2 · FIT OUTCOME MODEL</text>
+  <rect x="325" y="105" width="200" height="140" class="box"/>
+  <text x="425" y="140" text-anchor="middle" class="head">Estimated PS</text>
+  <text x="425" y="171" text-anchor="middle" class="formula">Y ~ treatment + e(X)</text>
+  <text x="425" y="199" text-anchor="middle" class="formula">+ offset(log(years))</text>
+  <text x="425" y="226" text-anchor="middle" class="small">Poisson regression for counts</text>
+
+  <path d="M530 175 H585" class="arrow"/>
+  <text x="710" y="84" text-anchor="middle" class="step">3 · PREDICT FOR TREATED PATIENTS</text>
+  <rect x="595" y="105" width="230" height="140" class="box"/>
+  <text x="710" y="137" text-anchor="middle" class="head">Each DMT1 patient</text>
+  <rect x="620" y="153" width="180" height="32" rx="7" fill="#eaf1f8" stroke="#26476b"/>
+  <text x="710" y="175" text-anchor="middle" class="body" fill="#26476b">Predict rate under DMT1</text>
+  <rect x="620" y="197" width="180" height="32" rx="7" fill="#edf5e8" stroke="#80c42b"/>
+  <text x="710" y="219" text-anchor="middle" class="body" fill="#38561c">Predict rate under DMT0</text>
+
+  <path d="M830 175 H885" class="arrow"/>
+  <text x="1025" y="84" text-anchor="middle" class="step">4 · AVERAGE CONTRAST</text>
+  <rect x="895" y="105" width="270" height="140" class="box"/>
+  <text x="1030" y="143" text-anchor="middle" class="head">Average over DMT1 patients</text>
+  <text x="1030" y="178" text-anchor="middle" class="formula">mean(predicted rate DMT1 /</text>
+  <text x="1030" y="201" text-anchor="middle" class="formula">predicted rate DMT0)</text>
+  <rect x="970" y="215" width="120" height="25" rx="12" fill="#172b4d"/>
+  <text x="1030" y="233" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="700" fill="#ffffff">ATT rate ratio</text>
+
+  <rect x="300" y="335" width="600" height="95" rx="12" fill="#fff8e6" stroke="#d9a441" stroke-width="1.5"/>
+  <text x="600" y="370" text-anchor="middle" class="head">The target is the treated population</text>
+  <text x="600" y="399" text-anchor="middle" class="body">Use the same treated patients for both counterfactual predictions.</text>
+  <text x="600" y="453" text-anchor="middle" class="small">Good overlap is needed: the model should not have to extrapolate far to predict DMT0 outcomes for DMT1 patients.</text>
+</svg>

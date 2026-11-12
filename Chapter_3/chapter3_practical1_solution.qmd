@@ -1,0 +1,176 @@
+---
+title: "Practical 1: Baseline characteristics and propensity scores"
+subtitle: "Computer practical solutions"
+format:
+  html:
+    theme: cosmo
+    toc: true
+    toc-depth: 3
+    toc-location: right
+    number-sections: false
+    code-copy: true
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+This practical is based on the online chapter [“Confounding adjustment using propensity score methods”](https://smartdata-analysis-and-statistics.github.io/comparative-effectiveness/chapter_06.html), which complements the material in *Comparative Effectiveness and Personalized Medicine Research Using Real-World Data* (pp. 99–123). The book chapter is by Tammy Jiang, Gabrielle Simoneau, Changyu Shen, Fabio Pellegrini, and Carl de Moor.
+
+::: {.callout-note title="How to use this solution"}
+The companion [task page](chapter3_practical1_task.qmd) contains the prompts. The questions and tasks are transcribed below in the same order, followed by comments and answers.
+:::
+
+# Introduction
+
+This practical compares the baseline characteristics of patients receiving DMT1 and DMT0, fits a propensity-score model, and assesses overlap. A propensity score (PS) is the probability of receiving the treatment of interest conditional on measured baseline covariates. It describes treatment assignment; it is not the probability of a good outcome.
+
+# 1. Prepare and compare the baseline data
+
+```{r}
+#| eval: true
+library(dplyr)
+library(ggplot2)
+library(cobalt)
+data_file <- if (file.exists("data/chapter3_ps_data.rds")) {
+  "data/chapter3_ps_data.rds"
+} else {
+  "Chapter_3/data/chapter3_ps_data.rds"
+}
+dat <- readRDS(data_file)
+ps_formula <- treatment ~ age + female + prevDMTefficacy +
+  premedicalcost + prerelapse_num + numSymptoms
+```
+
+**Tasks:**
+
+1. Inspect the data dimensions, variable names, treatment counts, and missing values.
+```{r}
+#| eval: true
+dim(dat)
+str(dat)
+table(dat$treatment)
+colSums(is.na(dat))
+```
+
+2. Create a baseline characteristics table comparing DMT1 and DMT0, similar to the table in the reference chapter. Include all six baseline covariates in the PS model, report categorical variables as n (%) and continuous variables as mean (SD), and show the sample size in each treatment group. Do not add baseline hypothesis tests.
+```{r}
+#| eval: true
+baseline_vars <- c("age", "female", "prevDMTefficacy",
+                   "premedicalcost", "prerelapse_num", "numSymptoms")
+categorical_vars <- c("female", "prevDMTefficacy", "numSymptoms")
+
+baseline_table <- tableone::CreateTableOne(
+  vars = baseline_vars,
+  strata = "treatment",
+  data = dat,
+  factorVars = categorical_vars,
+  test = FALSE
+)
+
+print(baseline_table)
+```
+
+::: {.callout-tip title="Comments and answer"}
+**Table comment:** `CreateTableOne()` groups the summaries by treatment. It displays means and standard deviations for continuous variables, and counts and percentages for categorical variables. `test = FALSE` suppresses baseline p-values. Use the SMDs below to assess the magnitude of measured imbalance.
+:::
+
+3. Compare the six baseline covariates between treatment groups using standardized mean differences (SMDs) to describe imbalance; do not use hypothesis tests to select covariates.
+```{r}
+#| eval: true
+bal.tab(ps_formula, data = dat, un = TRUE)
+```
+4. Fit the supplied logistic treatment model and calculate a predicted treatment probability for each participant.
+```{r}
+#| eval: true
+ps_fit <- glm(ps_formula, data = dat, family = binomial())
+dat$ps <- predict(ps_fit, type = "response")
+summary(ps_fit)
+```
+5. Plot the propensity-score distributions by treatment and report the range in each group.
+
+```{r}
+#| eval: true
+ggplot(dat, aes(x = ps, fill = treatment)) +
+  geom_histogram(position = "identity", alpha = .45, bins = 30) +
+  facet_wrap(~ treatment, ncol = 1) +
+  scale_fill_manual(values = c(DMT0 = "#80c42b", DMT1 = "#26476b"),
+                    guide = "none") +
+  labs(x = "Probability of Treatment", y = "Count",
+       title = "Propensity Score Distribution by Treatment Group") +
+  theme_minimal()
+dat %>% group_by(treatment) %>%
+  summarise(n = n(), min = min(ps), median = median(ps), max = max(ps))
+```
+
+**Comments on the output:** The saved RDS contains 10,000 complete simulated patient records, with 7,604 assigned to DMT1 and 2,396 to DMT0. The table from `bal.tab()` gives SMDs before adjustment; inspect their absolute values and identify the largest. Treatment assignment depends on all six baseline variables in the PS model, so measured imbalance is expected. The fixed seed makes the cohort reproducible. Report the PS ranges and balance values from your run.
+
+**Questions for discussion:**
+
+1. Which baseline characteristics differ most between the two treatment groups before adjustment? Refer to the SMDs.
+2. What does overlap in the propensity-score distributions tell you? What might limited overlap mean for the comparison?
+3. Why should the outcome and post-treatment variables not be used to estimate the propensity score?
+4. Why is treatment-prediction accuracy not the main criterion for choosing a propensity-score model?
+
+::: {.callout-tip title="Comments and answers"}
+1. **Which baseline characteristics differ most between the two treatment groups before adjustment? Refer to the SMDs.** The largest absolute SMDs identify the strongest measured differences. Treatment assignment depends on age, female, previous DMT efficacy, premedical cost, prior relapse count, and symptom count, so imbalance in these variables is plausible. Rank them using the values from `bal.tab()`.
+2. **What does overlap in the propensity-score distributions tell you? What might limited overlap mean for the comparison?** Overlap indicates that some people with similar measured covariates received each treatment, so their outcomes can be compared with less extrapolation. Limited overlap means that some treated people lack comparable controls (or vice versa); an estimate for the full target group may rely on extrapolation, become unstable, or require changing the target population.
+3. **Why should the outcome and post-treatment variables not be used to estimate the propensity score?** The PS models treatment assignment from pretreatment covariates. The outcome is not a cause of prior treatment assignment, and post-treatment variables can be affected by treatment; conditioning on them can distort the causal comparison.
+4. **Why is treatment-prediction accuracy not the main criterion for choosing a propensity-score model?** The goal is to balance relevant baseline covariates between treatment groups, not to classify treatment as accurately as possible. A highly discriminating model can produce extreme scores and poor overlap. Assess covariate balance and overlap directly.
+:::
+
+# 2. A shared framework for assessing the analyses
+
+Several checks apply across methods: define the estimand and target population; inspect whether both treatments occur across the covariate profiles in that target; assess the measured covariates used for adjustment; and report the information and uncertainty supporting the estimate. A check's implementation depends on the method. For example, pair distance is specific to matching, while extreme weights and effective sample size are especially important for weighting.
+
+**Tasks:**
+
+1. Complete the table using the methods as implemented in Practicals 2–5.
+2. Mark which feasibility checks are shared across the methods and which are method-specific.
+3. Explain why high treated-patient retention is relevant to ATT matching but is not a universal pass/fail condition for every method.
+
+| Method | Feasibility and diagnostics to report | Target in these practicals |
+|---|---|---|
+| Matching |  |  |
+| Stratification |  |  |
+| Weighting |  |  |
+| PS regression adjustment |  |  |
+
+::: {.callout-tip title="Comments and answers"}
+1. **Complete the table using the methods as implemented in Practicals 2–5.** See the completed table below.
+2. **Mark which feasibility checks are shared across the methods and which are method-specific.** Define the estimand, describe overlap/support, specify relevant pretreatment covariates, and report uncertainty in every analysis. Matching additionally needs treated retention and pair-distance assessment; stratification needs adequate group counts within strata; weighting needs weight distribution and ESS; PS regression adjustment needs outcome-model diagnostics, assessment of the PS functional form, and evaluation of extrapolation.
+3. **Explain why high treated-patient retention is relevant to ATT matching but is not a universal pass/fail condition for every method.** In ATT matching, discarded treated patients are no longer represented by the matched sample, so retention describes how closely the sample target matches all treated patients. Other methods do not necessarily discard treated people; for weighting, ESS and weight concentration are more informative. No universal retention percentage establishes validity.
+
+| Method | Feasibility and diagnostics to report | Target in these practicals |
+|---|---|---|
+| Matching | Common support, number and proportion of treated patients retained, absolute within-pair logit-score distances relative to the caliper, and pre/post-match SMDs. | ATT among the treated patients retained by matching. |
+| Stratification | Counts of each treatment within each stratum, within-stratum balance, and whether every stratum supports a comparison. | ATT using treated-count stratum weights. |
+| Weighting | Weight distribution, extreme weights, control ESS, and weighted SMDs; report any truncation rule. | ATT using odds weights for controls. |
+| PS regression adjustment | PS support/overlap; outcome-model fit and specification, including whether the PS relationship is plausible; influential observations; extrapolation for treated patients; and sensitivity to reasonable PS model forms. | ATT standardized over DMT1 patients. |
+:::
+
+**Questions for discussion:**
+
+1. Which checks should appear in every propensity-score analysis, regardless of the adjustment method?
+2. How do the diagnostics for PS regression adjustment differ from balance checks after matching, stratification, and weighting?
+3. Why is the treatment effect not the first criterion to use when choosing among methods?
+
+::: {.callout-tip title="Comments and answers"}
+1. **Which checks should appear in every propensity-score analysis, regardless of the adjustment method?** State the estimand, target population, adjustment covariates and rationale, treatment overlap in the target population, and uncertainty. Assess covariate balance after methods that use the PS to construct or weight a comparison population.
+2. **How do the diagnostics for PS regression adjustment differ from balance checks after matching, stratification, and weighting?** Matching, stratification, and weighting construct a comparison set or pseudo-population, so balance checks whether the adjusted groups became similar on measured covariates. PS regression adjustment uses the score in an outcome model instead; assess score overlap, the outcome model's functional form (including the PS term), influential observations, and support for counterfactual predictions over treated patients. Balance and overlap remain useful evidence about the PS model, but this method does not produce a matched or reweighted sample whose balance alone validates the estimate.
+3. **Why is the treatment effect not the first criterion to use when choosing among methods?** Choosing a method after viewing which estimate is most favorable can bias the analysis. Specify the causal question and estimand first, then judge candidate designs using support, balance, retention or ESS as applicable, and model adequacy before interpreting the outcome estimate.
+:::
+
+::: {.callout-note title="Optional: prepare ATE weights"}
+This practical estimates the propensity score but does not estimate a treatment effect. The code below shows how the same PS is converted to ATT or ATE weights; use the ATE weights in a later outcome analysis to target the full cohort.
+
+```{r}
+#| eval: false
+dat$w_att <- ifelse(dat$treatment == "DMT1", 1,
+                    dat$ps / (1 - dat$ps))
+dat$w_ate <- ifelse(dat$treatment == "DMT1", 1 / dat$ps,
+                    1 / (1 - dat$ps))
+```
+
+The PS model does not change. The weights change: ATT keeps DMT1 patients at weight 1 and reweights DMT0 patients; ATE reweights both groups to represent the full cohort. These weights alone are not treatment-effect estimates.
+:::

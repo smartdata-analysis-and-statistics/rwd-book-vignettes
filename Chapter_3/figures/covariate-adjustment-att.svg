@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 650" role="img" aria-labelledby="title desc">
+  <title id="title">Covariate adjustment for the ATT</title>
+  <desc id="desc">A baseline-adjusted outcome model predicts relapse rates for each DMT1 patient under both DMT1 and DMT0. Averaging both sets of predictions over the DMT1 patients estimates the ATT.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#26476b"/></marker>
+    <style>
+      text{font-family:Arial,Helvetica,sans-serif;fill:#212529}.title{font-size:30px;font-weight:700;fill:#26476b}.sub{font-size:17px;fill:#5d6873}.head{font-size:20px;font-weight:700;fill:#26476b}.body{font-size:16px}.small{font-size:14px;fill:#5d6873}.panel{fill:#fff;stroke:#d8e1e8;stroke-width:2}.soft{fill:#eef4f8;stroke:#26476b;stroke-width:2}.focus{fill:#f3f9e9;stroke:#80c42b;stroke-width:2}.navy{fill:#26476b;stroke:#26476b;stroke-width:2}.green{fill:#80c42b;stroke:#5c8f18;stroke-width:2}.line{stroke:#26476b;stroke-width:3;fill:none;marker-end:url(#arrow)}
+    </style>
+  </defs>
+  <rect width="1180" height="650" rx="18" fill="#fff"/>
+  <text x="590" y="48" text-anchor="middle" class="title">Covariate adjustment | ATT</text>
+  <text x="590" y="77" text-anchor="middle" class="sub">Use the outcome model to predict both treatment outcomes for the DMT1 target patients</text>
+  <rect x="34" y="112" width="270" height="420" rx="16" class="panel"/>
+  <rect x="338" y="112" width="324" height="420" rx="16" class="soft"/>
+  <rect x="696" y="112" width="240" height="420" rx="16" fill="#eef4f8" stroke="#26476b" stroke-width="2"/>
+  <rect x="970" y="112" width="176" height="420" rx="16" class="focus"/>
+  <text x="169" y="150" text-anchor="middle" class="head">1. Define target group</text>
+  <text x="169" y="178" text-anchor="middle" class="small">Keep DMT1 patients' baseline profiles</text>
+  <text x="79" y="228" class="body">DMT1 patients</text>
+  <circle cx="105" cy="274" r="14" class="navy"/><circle cx="151" cy="274" r="14" class="navy"/><circle cx="197" cy="274" r="14" class="navy"/><circle cx="243" cy="274" r="14" class="navy"/>
+  <rect x="68" y="326" width="202" height="93" rx="12" fill="#f3f9e9" stroke="#80c42b" stroke-width="2"/>
+  <text x="169" y="356" text-anchor="middle" class="body">Same patients, same</text>
+  <text x="169" y="380" text-anchor="middle" class="body">measured covariates</text>
+  <text x="169" y="451" text-anchor="middle" class="small">Target is people who received</text>
+  <text x="169" y="472" text-anchor="middle" class="small">DMT1, not the whole cohort</text>
+  <path d="M309 322 H330" class="line"/>
+  <text x="500" y="150" text-anchor="middle" class="head">2. Fit outcome model</text>
+  <text x="500" y="186" text-anchor="middle" class="body">Relapses ~ treatment + baseline</text>
+  <text x="500" y="211" text-anchor="middle" class="body">covariates + offset(log(years))</text>
+  <rect x="379" y="248" width="242" height="91" rx="12" fill="#fff" stroke="#d8e1e8" stroke-width="2"/>
+  <text x="500" y="283" text-anchor="middle" class="body">Adjust for measured</text>
+  <text x="500" y="308" text-anchor="middle" class="body">pretreatment differences</text>
+  <text x="500" y="393" text-anchor="middle" class="small">Then predict both outcomes for</text>
+  <text x="500" y="415" text-anchor="middle" class="small">each DMT1 patient's covariates</text>
+  <path d="M667 322 H688" class="line"/>
+  <text x="816" y="150" text-anchor="middle" class="head">3. Counterfactual rates</text>
+  <rect x="724" y="192" width="184" height="103" rx="12" fill="#fff" stroke="#26476b" stroke-width="2"/>
+  <circle cx="751" cy="226" r="12" class="navy"/><text x="776" y="232" class="body">Under DMT1</text>
+  <text x="816" y="269" text-anchor="middle" class="small">Predicted rate for each</text>
+  <rect x="724" y="321" width="184" height="103" rx="12" fill="#fff" stroke="#80c42b" stroke-width="2"/>
+  <circle cx="751" cy="355" r="12" class="green"/><text x="776" y="361" class="body">Under DMT0</text>
+  <text x="816" y="398" text-anchor="middle" class="small">Predicted rate for each</text>
+  <text x="816" y="463" text-anchor="middle" class="small">Average predictions within</text>
+  <text x="816" y="484" text-anchor="middle" class="small">the DMT1 target group</text>
+  <path d="M941 322 H962" class="line"/>
+  <text x="1058" y="150" text-anchor="middle" class="head">4. ATT</text>
+  <text x="1058" y="218" text-anchor="middle" class="body">Contrast the</text>
+  <text x="1058" y="242" text-anchor="middle" class="body">two averaged</text>
+  <text x="1058" y="266" text-anchor="middle" class="body">rates</text>
+  <rect x="993" y="311" width="130" height="88" rx="12" fill="#fff" stroke="#80c42b" stroke-width="2"/>
+  <text x="1058" y="347" text-anchor="middle" class="head">DMT1</text>
+  <text x="1058" y="374" text-anchor="middle" class="body">recipients</text>
+  <text x="1058" y="450" text-anchor="middle" class="small">Marginal relapse</text>
+  <text x="1058" y="471" text-anchor="middle" class="small">rate ratio</text>
+  <circle cx="78" cy="585" r="12" class="navy"/><text x="100" y="591" class="body">DMT1 (treated)</text><circle cx="275" cy="585" r="12" class="green"/><text x="297" y="591" class="body">DMT0 (control)</text>
+  <text x="1144" y="592" text-anchor="end" class="small">ATT = average treatment effect among treated</text>
+</svg>

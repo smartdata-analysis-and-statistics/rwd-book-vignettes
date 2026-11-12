@@ -1,0 +1,224 @@
+---
+title: "Practical 5: Regression adjustment"
+subtitle: "Computer practical: ATT"
+format:
+  html:
+    theme: cosmo
+    toc: true
+    toc-depth: 3
+    toc-location: right
+    number-sections: false
+    code-copy: true
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+This practical is based on the online chapter [“Confounding adjustment using propensity score methods”](https://smartdata-analysis-and-statistics.github.io/comparative-effectiveness/chapter_06.html), which complements the material in *Comparative Effectiveness and Personalized Medicine Research Using Real-World Data* (pp. 99–123). The book chapter is by Tammy Jiang, Gabrielle Simoneau, Changyu Shen, Fabio Pellegrini, and Carl de Moor.
+
+::: {.callout-note title="How to use this practical"}
+Complete the tasks and discussion questions before opening the [worked solution](chapter3_practical5_solution.qmd). The figure and short method summary introduce the analysis.
+:::
+
+# 1. How the regression adjustment for the propensity score works
+
+![Schematic of propensity-score regression adjustment: estimate the PS from pretreatment covariates, fit a Poisson outcome model using treatment and PS, predict both treatment outcomes for each treated patient, and average the rate ratios to estimate the ATT.](figures/ps-regression-adjustment-att.svg){width=100%}
+
+Estimate each patient's propensity score from pretreatment covariates, then fit an outcome model with treatment, the estimated propensity score, and an offset for follow-up time. Predict each DMT1 patient's relapse rate under both treatments and average the rate contrast over DMT1 patients to target the ATT.
+
+**When to use:** when the PS model provides adequate overlap and balance, and the relationship between the PS and outcome can be modeled credibly.
+
+**Advantages:** gives a compact outcome model and can standardize counterfactual predictions to the treated population.
+
+**Limitations:** depends on the propensity-score model and the functional form of the score in the outcome model. It cannot repair lack of support, and the treatment coefficient alone is not generally the standardized ATT with a nonlinear link. It does not address unmeasured confounding.
+
+# 2. Prepare the data and fit the models
+
+This practical uses regression adjustment for the estimated propensity score to estimate the ATT. The propensity score is estimated from measured pretreatment confounders and used to inspect overlap and as a covariate in the outcome model.
+
+```{r}
+#| eval: false
+install.packages(c("dplyr", "ggplot2", "marginaleffects"))
+library(dplyr)
+library(ggplot2)
+library(marginaleffects)
+data_file <- if (file.exists("data/chapter3_ps_data.rds")) {
+  "data/chapter3_ps_data.rds"
+} else {
+  "Chapter_3/data/chapter3_ps_data.rds"
+}
+dat <- readRDS(data_file)
+```
+
+Estimate the PS using the prespecified pretreatment confounders, then fit the primary Poisson outcome model and a quadratic-PS sensitivity model. Section 3 evaluates overlap and diagnostics for these fitted models; do not interpret the ATT until Section 4.
+
+```{r}
+#| eval: false
+ps_fit <- glm(
+  treatment ~ age + female + prevDMTefficacy + premedicalcost +
+    prerelapse_num + numSymptoms,
+  family = binomial(), data = dat
+)
+dat$ps <- predict(ps_fit, type = "response")
+
+fit_ps <- glm(
+  y ~ treatment + ps + offset(log(years)),
+  family = poisson(link = "log"), data = dat
+)
+
+fit_ps_quad <- glm(
+  y ~ treatment + ps + I(ps^2) + offset(log(years)),
+  family = poisson(link = "log"), data = dat
+)
+```
+
+# 3. Feasibility and diagnostics
+
+## 3.1 Propensity-score support and overlap
+
+Inspect the score distributions from the Section 2 PS model by treatment and consider whether treated patients have comparable controls across their score range.
+
+```{r}
+#| eval: false
+ggplot(dat, aes(x = ps, fill = treatment)) +
+  geom_histogram(position = "identity", alpha = .45, bins = 30) +
+  facet_wrap(~ treatment, ncol = 1) +
+  scale_fill_manual(values = c(DMT0 = "#80c42b", DMT1 = "#26476b"),
+                    guide = "none") +
+  labs(x = "Estimated probability of DMT1", y = "Participants") +
+  theme_minimal()
+
+dat %>% group_by(treatment) %>%
+  summarise(n = n(), min = min(ps), median = median(ps), max = max(ps))
+
+# Rough score-range check: treated patients outside the observed control range
+control_range <- range(dat$ps[dat$treatment == "DMT0"])
+dat %>% filter(treatment == "DMT1") %>%
+  summarise(
+    n_treated = n(),
+    n_outside_control_range = sum(ps < control_range[1] | ps > control_range[2]),
+    pct_outside_control_range = 100 * mean(ps < control_range[1] | ps > control_range[2])
+  )
+```
+
+**Questions:**
+
+1. Compare estimated PS distributions by treatment and describe regions with limited support. Report each group's score range and the number and percentage of DMT1 patients outside the observed DMT0 score range.
+2. Explain why overlap matters when predictions are standardized over DMT1 patients. Treat the range check as a rough diagnostic: patients inside the overall DMT0 range may still have few nearby controls.
+3. State how much extrapolation the ATT appears to require and whether an explicitly defined overlap-restricted target population would be more credible.
+
+## 3.2 Outcome-model fit and specification
+
+Evaluate the primary Poisson model fitted in Section 2, which includes treatment, estimated PS, and `offset(log(years))`, following [Section 3.7 of the comparative-effectiveness chapter](https://smartdata-analysis-and-statistics.github.io/comparative-effectiveness/chapter_06.html#propensity-score-weighting). That example targets the ATE by interpreting the treatment coefficient. Here, both treatment predictions will be standardized over DMT1 patients to target the ATT. The summary shows coefficient estimates and residual deviance; the residual-versus-PS plot checks whether residual patterns suggest that a linear PS term is inadequate. Treat both as diagnostic evidence, not proof that the model is correct.
+
+```{r}
+#| eval: false
+summary(fit_ps)
+plot(dat$ps, residuals(fit_ps, type = "deviance"),
+     xlab = "Estimated propensity score", ylab = "Deviance residual",
+     main = "Outcome-model residuals versus propensity score")
+abline(h = 0, lty = 2)
+lines(lowess(dat$ps, residuals(fit_ps, type = "deviance")), col = "steelblue", lwd = 2)
+```
+
+**Questions:**
+
+1. What do the coefficient estimates and residual deviance in the summary indicate? Do they raise concerns that need follow-up in the residual and influence plots in Section 3.3?
+2. Does the residual-versus-PS plot show curvature or other systematic patterns? What does a linear PS term assume about the outcome relationship on the log-rate scale, and does that form seem plausible alongside the sensitivity analysis in Section 3.4?
+
+## 3.3 Influential observations
+
+Inspect residual and influence diagnostics for the PS regression model. Consider whether a small number of observations drive the fitted effect; do not remove observations solely because they are influential.
+
+```{r}
+#| eval: false
+par(mfrow = c(2, 2))
+plot(fit_ps)
+par(mfrow = c(1, 1))
+head(sort(cooks.distance(fit_ps), decreasing = TRUE), 10)
+sum(residuals(fit_ps, type = "pearson")^2) / df.residual(fit_ps)
+```
+
+**Questions:**
+
+1. Do the residual-versus-fitted, Q-Q, scale-location, or residual-versus-leverage panels show concerning patterns? Which observations have large influence diagnostics, and do they also have unusual outcomes, follow-up, or PS values?
+2. Why should influential observations be investigated rather than deleted automatically? What does the Pearson dispersion ratio suggest as a rough screen, and why is it not a definitive test?
+
+## 3.4 Sensitivity to reasonable model forms
+
+Compare the linear and quadratic PS outcome models fitted in Section 2. The quadratic form is a sensitivity analysis, not an automatic model-selection step. AIC provides a relative fit comparison between these two models; it does not establish absolute model adequacy or select a causal model by itself.
+
+```{r}
+#| eval: false
+AIC(fit_ps, fit_ps_quad)
+```
+
+**Questions:**
+
+1. Why is a quadratic PS term a reasonable sensitivity form for this model?
+2. How do model fit and the standardized ATT compare between the linear and quadratic PS models? Does the estimate or its uncertainty change enough to affect the substantive conclusion? Why should you avoid choosing a form using a significance test alone?
+
+# 4. Estimate the ATT
+
+Use counterfactual predictions under both treatments for each DMT1 patient. Averaging over the treated patients targets the ATT. The exponentiated marginal contrast is a relapse rate ratio (IRR).
+
+```{r}
+#| eval: false
+att_ps <- avg_comparisons(
+  fit_ps, variables = "treatment", comparison = "ratioavg",
+  newdata = subset(dat, treatment == "DMT1"), vcov = "HC3"
+)
+att_ps
+
+# Sensitivity estimates, also standardized over treated patients
+avg_comparisons(fit_ps_quad, variables = "treatment", comparison = "ratioavg",
+                newdata = subset(dat, treatment == "DMT1"), vcov = "HC3")
+```
+
+**Tasks:**
+
+1. Explain why the covariates used to estimate the PS must be measured before treatment and why the outcome model includes `offset(log(years))`.
+2. Report the standardized DMT1-versus-DMT0 marginal relapse rate ratio and 95% confidence interval.
+3. Explain how averaging counterfactual predictions over DMT1 patients targets the ATT. In this model, does the exponentiated treatment coefficient equal the standardized rate ratio? Explain what model feature makes them equal here and when they could differ.
+
+::: {.callout-note title="Optional: change the target to the ATE"}
+To target the ATE instead, change the rows used for standardization from DMT1 patients to the full cohort:
+
+```{r}
+#| eval: false
+ate <- avg_comparisons(
+  fit_ps, variables = "treatment", comparison = "ratioavg",
+  newdata = dat, vcov = "HC3"
+)
+ate
+```
+
+The specific change is `newdata = dat` instead of `newdata = subset(dat, treatment == "DMT1")`. The former averages the counterfactual outcomes over everyone (ATE); the latter averages over those treated (ATT).
+:::
+
+# 5. Compare ATT estimates across methods
+
+Collect the primary ATT estimate and 95% confidence interval from each method. For Practical 5, use the propensity-score regression-adjustment estimate, not the optional quadratic-PS sensitivity analysis.
+
+| Practical and method | ATT rate ratio (95% CI) | Target population |
+|---|---:|---|
+| 2. Propensity-score matching |  |  |
+| 3. Propensity-score stratification |  |  |
+| 4. Propensity-score weighting |  |  |
+| 5. PS regression adjustment |  |  |
+
+**Questions:**
+
+1. Enter the ATT estimate and confidence interval from each practical, and identify the target population for each method.
+2. Why do the estimates differ even though each practical aims to estimate the ATT? In your answer, compare how matching, stratification, weighting, and PS regression adjustment form their comparisons, use the PS, and depend on design or model choices.
+3. When would you use each method, and which would you recommend for this dataset and target question? Explain your choice using support, balance, target population, model fit, influence, and precision; do not choose only by which estimate is closest to the others.
+
+# References
+
+- Austin, P. C. (2011). An introduction to propensity score methods for reducing the effects of confounding in observational studies. *Multivariate Behavioral Research, 46*(3), 399–424. [https://doi.org/10.1080/00273171.2011.568786](https://doi.org/10.1080/00273171.2011.568786)
+- Austin, P. C. (2009). Balance diagnostics for comparing the distribution of baseline covariates between treatment groups in propensity-score matched samples. *Statistics in Medicine, 28*(25), 3083–3107. [https://doi.org/10.1002/sim.3697](https://doi.org/10.1002/sim.3697)
+- Jiang, T., Simoneau, G., Shen, C., Pellegrini, F., & De Moor, C. (2026). Confounding adjustment using propensity score methods. In T. P. A. Debray, T.-L. Nguyen, & R. W. Platt (Eds.), *Comparative Effectiveness and Personalized Medicine Research Using Real-World Data* (pp. 99–123). CRC Press. [https://doi.org/10.1201/9781003300809-7](https://doi.org/10.1201/9781003300809-7)
+- Debray, T. P. A., Nguyen, T.-L., & Platt, R. W. (Eds.). (2026). *Comparative Effectiveness and Personalized Medicine Research Using Real-World Data*. CRC Press. [https://doi.org/10.1201/9781003300809](https://doi.org/10.1201/9781003300809)
+- Rosenbaum, P. R., & Rubin, D. B. (1983). The central role of the propensity score in observational studies for causal effects. *Biometrika, 70*(1), 41–55. [https://doi.org/10.1093/biomet/70.1.41](https://doi.org/10.1093/biomet/70.1.41)
+- Rosenbaum, P. R., & Rubin, D. B. (1984). Reducing bias in observational studies using subclassification on the propensity score. *Journal of the American Statistical Association, 79*(387), 516–524. [https://doi.org/10.1080/01621459.1984.10478078](https://doi.org/10.1080/01621459.1984.10478078)

@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 650" role="img" aria-labelledby="title desc">
+  <title id="title">1:1 nearest-neighbor propensity score matching for the ATT</title>
+  <desc id="desc">The diagram shows propensity scores estimated from baseline characteristics, then one-to-one nearest-neighbor pairs formed without replacement. Only pairs within a 0.1 standard deviation caliper on the propensity-score logit are retained; treated patients without an eligible control remain unmatched. The treatment contrast is averaged over the matched treated patients.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#26476b"/></marker>
+    <style>
+      text{font-family:Arial,Helvetica,sans-serif;fill:#212529}
+      .title{font-size:29px;font-weight:700;fill:#26476b}
+      .sub{font-size:17px;fill:#5d6873}
+      .head{font-size:20px;font-weight:700;fill:#26476b}
+      .body{font-size:16px}
+      .small{font-size:14px;fill:#5d6873}
+      .panel{fill:#fff;stroke:#d8e1e8;stroke-width:2}
+      .soft{fill:#eef4f8;stroke:#26476b;stroke-width:2}
+      .focus{fill:#f3f9e9;stroke:#80c42b;stroke-width:2}
+      .navy{fill:#26476b;stroke:#26476b;stroke-width:2}
+      .green{fill:#80c42b;stroke:#5c8f18;stroke-width:2}
+      .muted{fill:#cbd3d9;stroke:#929da6;stroke-width:2}
+      .line{stroke:#26476b;stroke-width:3;fill:none;marker-end:url(#arrow)}
+      .pairline{stroke:#7b8b96;stroke-width:2.5;fill:none}
+      .set{fill:#fff;stroke:#9aa8b3;stroke-width:1.5}
+    </style>
+  </defs>
+  <rect width="1180" height="650" rx="18" fill="#ffffff"/>
+  <text x="590" y="48" text-anchor="middle" class="title">1:1 nearest-neighbor propensity score matching | ATT</text>
+  <text x="590" y="77" text-anchor="middle" class="sub">Matched pairs compare DMT1 patients with similar DMT0 controls</text>
+
+  <rect x="34" y="112" width="298" height="420" rx="16" class="panel"/>
+  <rect x="365" y="112" width="485" height="420" rx="16" class="soft"/>
+  <rect x="883" y="112" width="263" height="420" rx="16" class="focus"/>
+
+  <text x="183" y="150" text-anchor="middle" class="head">1. Estimate PS</text>
+  <text x="183" y="177" text-anchor="middle" class="small">Each dot is one patient</text>
+  <text x="75" y="224" class="body">DMT1</text><text x="75" y="307" class="body">DMT0</text>
+  <circle cx="150" cy="218" r="15" class="navy"/><circle cx="195" cy="218" r="15" class="navy"/><circle cx="240" cy="218" r="15" class="navy"/><circle cx="285" cy="218" r="15" class="navy"/>
+  <circle cx="150" cy="301" r="15" class="green"/><circle cx="195" cy="301" r="15" class="green"/><circle cx="240" cy="301" r="15" class="green"/><circle cx="285" cy="301" r="15" class="green"/>
+  <text x="183" y="365" text-anchor="middle" class="body">Model treatment from</text>
+  <text x="183" y="389" text-anchor="middle" class="body">baseline characteristics</text>
+  <text x="183" y="429" text-anchor="middle" class="small">Estimate each patient's</text>
+  <text x="183" y="450" text-anchor="middle" class="small">propensity-score logit</text>
+
+  <path d="M337 322 H357" class="line"/>
+  <text x="607" y="150" text-anchor="middle" class="head">2. Form 1:1 pairs</text>
+  <text x="607" y="177" text-anchor="middle" class="small">Nearest eligible control; each control used once</text>
+  <rect x="391" y="204" width="236" height="184" rx="10" class="set"/>
+  <rect x="645" y="204" width="180" height="184" rx="10" class="set"/>
+  <text x="509" y="230" text-anchor="middle" class="small">Matched pairs</text>
+  <text x="735" y="230" text-anchor="middle" class="small">Unmatched</text>
+  <text x="441" y="269" text-anchor="middle" class="small">Pair 1</text>
+  <circle cx="475" cy="265" r="13" class="navy"/><path d="M490 265 H524" class="pairline"/><circle cx="539" cy="265" r="13" class="green"/>
+  <text x="441" y="319" text-anchor="middle" class="small">Pair 2</text>
+  <circle cx="475" cy="315" r="13" class="navy"/><path d="M490 315 H524" class="pairline"/><circle cx="539" cy="315" r="13" class="green"/>
+  <text x="441" y="369" text-anchor="middle" class="small">Pair 3</text>
+  <circle cx="475" cy="365" r="13" class="navy"/><path d="M490 365 H524" class="pairline"/><circle cx="539" cy="365" r="13" class="green"/>
+  <circle cx="692" cy="276" r="13" class="muted"/><circle cx="735" cy="276" r="13" class="muted"/>
+  <text x="735" y="320" text-anchor="middle" class="small">Treated patients</text>
+  <text x="735" y="340" text-anchor="middle" class="small">outside caliper</text>
+  <text x="607" y="426" text-anchor="middle" class="body">Caliper: 0.1 SD of the logit PS</text>
+  <text x="607" y="453" text-anchor="middle" class="small">No eligible control? The treated patient is not matched.</text>
+  <path d="M855 322 H875" class="line"/>
+
+  <text x="1014" y="150" text-anchor="middle" class="head">3. Estimate ATT</text>
+  <circle cx="962" cy="222" r="17" class="navy"/><circle cx="1014" cy="222" r="17" class="green"/>
+  <text x="988" y="270" text-anchor="middle" class="body">Compare relapse rates</text>
+  <text x="1014" y="321" text-anchor="middle" class="body">Average over matched</text>
+  <text x="1014" y="345" text-anchor="middle" class="body">DMT1 patients</text>
+  <rect x="910" y="388" width="208" height="72" rx="12" fill="#fff" stroke="#80c42b" stroke-width="2"/>
+  <text x="1014" y="418" text-anchor="middle" class="head">ATT</text>
+  <text x="1014" y="442" text-anchor="middle" class="small">matched treated target</text>
+
+  <circle cx="78" cy="585" r="12" class="navy"/><text x="100" y="591" class="body">DMT1 (treated)</text>
+  <circle cx="275" cy="585" r="12" class="green"/><text x="297" y="591" class="body">DMT0 (control)</text>
+  <circle cx="501" cy="585" r="12" class="muted"/><text x="523" y="591" class="body">Not matched</text>
+  <text x="1144" y="592" text-anchor="end" class="small">ATT = average treatment effect among treated</text>
+</svg>

@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 650" role="img" aria-labelledby="title desc">
+  <title id="title">Propensity score weighting for the ATT</title>
+  <desc id="desc">The first panel shows different propensity score profiles before weighting: one DMT1 patient has a lower score and five have higher scores, while five DMT0 patients have lower scores and one has a higher score. ATT weighting leaves each DMT1 weight at one and weights each DMT0 patient by propensity score divided by one minus propensity score. All six DMT0 patients remain visible after weighting: low-score controls have small individual weights and the high-score control has a large individual weight. Circle area represents weight schematically.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#26476b"/></marker>
+    <style>
+      text{font-family:Arial,Helvetica,sans-serif;fill:#212529}.title{font-size:30px;font-weight:700;fill:#26476b}.sub{font-size:17px;fill:#5d6873}.head{font-size:20px;font-weight:700;fill:#26476b}.body{font-size:16px}.small{font-size:14px;fill:#5d6873}.panel{fill:#fff;stroke:#d8e1e8;stroke-width:2}.soft{fill:#eef4f8;stroke:#26476b;stroke-width:2}.focus{fill:#f3f9e9;stroke:#80c42b;stroke-width:2}.navy{fill:#26476b;stroke:#26476b;stroke-width:2}.green{fill:#80c42b;stroke:#5c8f18;stroke-width:2}.line{stroke:#26476b;stroke-width:3;fill:none;marker-end:url(#arrow)}
+    </style>
+  </defs>
+  <rect width="1180" height="650" rx="18" fill="#fff"/>
+  <text x="590" y="48" text-anchor="middle" class="title">Propensity score weighting | ATT</text>
+  <text x="590" y="77" text-anchor="middle" class="sub">Reweight DMT0 patients so their measured baseline profile resembles DMT1 patients</text>
+  <rect x="34" y="112" width="308" height="420" rx="16" class="panel"/>
+  <rect x="376" y="112" width="347" height="420" rx="16" class="soft"/>
+  <rect x="757" y="112" width="389" height="420" rx="16" class="focus"/>
+  <text x="188" y="150" text-anchor="middle" class="head">1. Rebalance PS profiles</text>
+  <text x="188" y="178" text-anchor="middle" class="small">Starting sample: DMT1 and DMT0 differ</text>
+  <text x="145" y="205" text-anchor="middle" class="small">Lower PS</text><text x="278" y="205" text-anchor="middle" class="small">Higher PS</text>
+  <text x="49" y="245" class="body">DMT1</text><text x="49" y="286" class="body">DMT0</text>
+  <circle cx="145" cy="239" r="7" class="navy"/><circle cx="220" cy="239" r="7" class="navy"/><circle cx="240" cy="239" r="7" class="navy"/><circle cx="260" cy="239" r="7" class="navy"/><circle cx="280" cy="239" r="7" class="navy"/><circle cx="300" cy="239" r="7" class="navy"/>
+  <circle cx="120" cy="280" r="7" class="green"/><circle cx="140" cy="280" r="7" class="green"/><circle cx="160" cy="280" r="7" class="green"/><circle cx="180" cy="280" r="7" class="green"/><circle cx="200" cy="280" r="7" class="green"/><circle cx="280" cy="280" r="7" class="green"/>
+  <text x="188" y="328" text-anchor="middle" class="small">DMT1 weight = 1</text>
+  <text x="188" y="351" text-anchor="middle" class="small">DMT0 weight = PS / (1 - PS)</text>
+  <path d="M188 360 V378" class="line"/>
+  <text x="188" y="407" text-anchor="middle" class="small">Weighted DMT0 represents DMT1</text>
+  <text x="49" y="442" class="body">DMT1</text><text x="49" y="486" class="small">DMT0 weighted</text>
+  <circle cx="145" cy="436" r="7" class="navy"/><circle cx="220" cy="436" r="7" class="navy"/><circle cx="240" cy="436" r="7" class="navy"/><circle cx="260" cy="436" r="7" class="navy"/><circle cx="280" cy="436" r="7" class="navy"/><circle cx="300" cy="436" r="7" class="navy"/>
+  <circle cx="120" cy="480" r="3.6" class="green"/><circle cx="140" cy="480" r="3.6" class="green"/><circle cx="160" cy="480" r="3.6" class="green"/><circle cx="180" cy="480" r="3.6" class="green"/><circle cx="200" cy="480" r="3.6" class="green"/><circle cx="280" cy="480" r="17.7" class="green"/>
+  <text x="188" y="517" text-anchor="middle" class="small">Circle area represents individual weight</text>
+  <path d="M347 322 H368" class="line"/>
+  <text x="550" y="150" text-anchor="middle" class="head">2. Build the ATT pseudo-population</text>
+  <text x="420" y="229" class="body">DMT1</text><text x="420" y="323" class="body">Weighted DMT0</text>
+  <circle cx="555" cy="222" r="15" class="navy"/><circle cx="605" cy="222" r="15" class="navy"/><circle cx="655" cy="222" r="15" class="navy"/>
+  <circle cx="555" cy="316" r="15" class="green"/><circle cx="605" cy="316" r="15" class="green"/><circle cx="655" cy="316" r="15" class="green"/>
+  <text x="550" y="383" text-anchor="middle" class="body">Weighted DMT0 targets DMT1 profile</text>
+  <text x="550" y="410" text-anchor="middle" class="small">Check weighted SMDs and control ESS</text>
+  <text x="550" y="455" text-anchor="middle" class="small">Profile balance does not mean equal group sizes</text>
+  <text x="550" y="480" text-anchor="middle" class="small">Extreme weights can make few controls dominate</text>
+  <path d="M728 322 H749" class="line"/>
+  <text x="951" y="150" text-anchor="middle" class="head">3. Estimate the ATT</text>
+  <rect x="800" y="190" width="303" height="92" rx="12" fill="#fff" stroke="#d8e1e8" stroke-width="2"/>
+  <text x="951" y="222" text-anchor="middle" class="body">Weighted relapse rates</text>
+  <text x="951" y="249" text-anchor="middle" class="body">DMT1 vs weighted DMT0</text>
+  <rect x="855" y="324" width="192" height="81" rx="12" fill="#26476b" stroke="#26476b" stroke-width="2"/>
+  <text x="951" y="359" text-anchor="middle" class="head" style="fill:#fff">ATT</text>
+  <text x="951" y="385" text-anchor="middle" class="small" style="fill:#fff">DMT1 target population</text>
+  <text x="951" y="454" text-anchor="middle" class="small">Balance and overlap still matter</text>
+  <circle cx="78" cy="585" r="12" class="navy"/><text x="100" y="591" class="body">DMT1 (treated)</text><circle cx="275" cy="585" r="12" class="green"/><text x="297" y="591" class="body">DMT0 (control)</text>
+  <text x="1144" y="592" text-anchor="end" class="small">ATT = average treatment effect among treated</text>
+</svg>

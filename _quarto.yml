@@ -1,17 +1,53 @@
 project:
   type: website
+  resources:
+    - sdas_large.png
+    - Chapter10/Practicals/data/chapter10_exploration_data.rds
+    - Chapter10/Practicals/data/chapter10_homogeneous_data.rds
+    - Chapter_3/data/chapter3_ps_data.rds
 
 execute:
   freeze: auto
 
 website:
   title: "RWD Book Vignettes"
+  site-url: "https://smartdata-analysis-and-statistics.github.io/rwd-book-vignettes/"
+  repo-url: "https://github.com/smartdata-analysis-and-statistics/rwd-book-vignettes"
   navbar:
     left:
       - href: index.qmd
         text: Home
+      - text: Comparative effectiveness
+        menu:
+          - href: Chapter_3/index.qmd
+            text: Chapter 3 practicals — index
+          - href: Chapter_3/chapter3_practical1_task.qmd
+            text: Baseline and propensity scores
+          - href: Chapter_3/chapter3_practical2_task.qmd
+            text: Propensity-score matching
+          - href: Chapter_3/chapter3_practical3_task.qmd
+            text: Propensity-score stratification
+          - href: Chapter_3/chapter3_practical4_task.qmd
+            text: Propensity-score weighting
+          - href: Chapter_3/chapter3_practical5_task.qmd
+            text: Regression adjustment for the propensity score
+          - href: Chapter10/Practicals/index.qmd
+            text: Chapter 10 practicals — index
+          - href: Chapter10/Practicals/chapter10_exploration_task.qmd
+            text: Data preparation and exploration
+          - href: Chapter10/Practicals/chapter10_homogeneous_treatment_effect_task.qmd
+            text: Multiple imputation
+          - href: Chapter10/Practicals/chapter10_exploration_solution.qmd
+            text: Exploration — solution
+          - href: Chapter10/Practicals/chapter10_homogeneous_treatment_effect_solution.qmd
+            text: Multiple imputation — solution
 
 format:
   html:
     theme: cosmo
     toc: true
+    toc-location: right
+    number-sections: false
+    code-copy: true
+    code-overflow: wrap
+    include-before-body: _brand.html

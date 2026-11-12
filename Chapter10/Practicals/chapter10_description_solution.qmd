@@ -1,0 +1,106 @@
+---
+title: "Dealing with missing data: Data Preparation and Exploration"
+subtitle: "Computer Practical Solutions"
+author: "Thomas Debray"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    toc-location: right
+    number-sections: false
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+::: {.callout-note title="How to use this solution"}
+The corresponding learner activities are in the [Data Preparation and Exploration practical](chapter10_exploration_task.qmd). Try each question before opening the worked answer.
+:::
+
+This solution follows the Chapter 10 missing-data case study. The data are simulated for teaching, so numerical results illustrate a workflow rather than evidence about DMF or TERI in a real population.
+
+## 1. Study question and estimand
+
+A suitable target question is:
+
+> Among patients eligible for either DMF or TERI, what is the average difference in the expected number of episodes over a specified follow-up period if everyone received DMF rather than TERI?
+
+The treatment is the observed DMF-versus-TERI assignment; `y` is a count outcome; `years` is follow-up; and the ATE is \(\tau_{ATE}=E(Y^1-Y^0)\). A causal interpretation additionally requires consistency, positivity, conditional exchangeability given adequate baseline covariates, and a well-defined treatment and follow-up strategy.
+
+## 2. Inspect the data
+
+```{r}
+#| eval: true
+library(dplyr)
+library(tableone)
+source("chapter10_helpers.R")
+
+data_complete <- generate_ce_data(n = 3000, seed = 1234)
+data_obs <- get_missdata(data_complete, scenario = "MNAR", seed = 1234)
+str(data_obs)
+summary(data_obs)
+table(data_obs$treatment)
+table(data_obs$gender, data_obs$treatment)
+```
+
+The main variables are:
+
+- `treatment`: exposure, with levels `DMF` and `TERI`;
+- `y`: count outcome;
+- `age`, `gender`, `prevDMTefficacy`, `logPremedicalcost`, `prerelapseNum`, and `numSymptoms`: baseline covariates;
+- `years`: follow-up time and a candidate offset; and
+- `Iscore`: a constructed candidate effect modifier.
+
+Because `y` is a count observed over different follow-up times, a Poisson model with `offset(log(years))` is a reasonable teaching model. Its adequacy would still require checking in a real analysis, especially for overdispersion and zero inflation.
+
+```{r}
+#| eval: true
+vars <- c("age", "gender", "prevDMTefficacy", "logPremedicalcost",
+          "prerelapseNum", "numSymptoms", "years")
+CreateTableOne(vars = vars, strata = "treatment", data = data_obs,
+               factorVars = c("gender", "prevDMTefficacy"), includeNA = TRUE)
+```
+
+The treatment groups are intentionally not exchangeable by design. Differences in baseline variables are therefore a reason to adjust, not evidence that one treatment is intrinsically better.
+
+## 3. Missingness
+
+```{r}
+#| eval: true
+library(naniar)
+vis_miss(data_obs)
+gg_miss_var(data_obs, facet = treatment, show_pct = TRUE)
+gg_miss_upset(data_obs, nsets = 10)
+```
+
+The simulated `MART` mechanism makes missingness depend on observed covariates and treatment. Unequal missingness by treatment makes complete-case selection potentially treatment-dependent. That can change the target population and introduce bias.
+
+The observed data cannot prove that the mechanism is MAR rather than MNAR. MAR and MNAR differ in their dependence on unobserved values, so subject-matter knowledge and sensitivity analyses are needed.
+
+```{r}
+#| eval: true
+data_obs %>%
+  mutate(complete_record = complete.cases(.)) %>%
+  count(treatment, complete_record) %>%
+  group_by(treatment) %>%
+  mutate(percent = 100 * n / sum(n))
+```
+
+## Conclusion
+
+A defensible next step is to prespecify the confounder set, inspect propensity-score overlap, use an appropriate missing-data strategy such as multiple imputation, check balance after matching, and report uncertainty. Complete-case analysis can be included as a sensitivity analysis, but should not be treated as automatic data cleaning.
+
+::: {.callout-tip title="Questions for discussion and answers"}
+**Question 1. Is complete-case status independent of treatment?**
+
+**Answer.** Not necessarily. In this teaching dataset, missingness is generated using treatment and observed covariates, so the proportion of complete records can differ between DMF and TERI.
+
+**Question 2. Can the observed data distinguish MAR from MNAR?**
+
+**Answer.** No. MAR concerns dependence on observed information, whereas MNAR concerns dependence on unobserved values. The latter cannot generally be verified from the observed data alone.
+
+**Question 3. Why is deleting incomplete records not neutral?**
+
+**Answer.** It changes the target population and can induce selection bias when completeness is related to treatment, outcome, or their common causes.
+:::

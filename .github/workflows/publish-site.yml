@@ -1,14 +1,17 @@
-name: Publish Chapter 10 practicals
+name: Publish practicals site
 
 on:
   workflow_dispatch:
   push:
     branches: [main]
     paths:
-      - "Chapter10/Practicals/**"
-      - "Chapter10/data/README.md"
+      - "Chapter_3/**"
+      - "Chapter10/**"
+      - "_quarto.yml"
+      - "index.qmd"
       - "_brand.html"
-      - ".github/workflows/publish-chapter10-practicals.yml"
+      - "sdas_large.png"
+      - ".github/workflows/publish-site.yml"
 
 permissions:
   contents: read
@@ -16,12 +19,11 @@ permissions:
   id-token: write
 
 concurrency:
-  group: chapter10-pages
+  group: github-pages
   cancel-in-progress: true
 
 jobs:
   build:
-    # Use the runner's preinstalled R to avoid setup-r's apt system-package step.
     runs-on: windows-2025
     steps:
       - name: Check out repository
@@ -36,11 +38,11 @@ jobs:
           install-r: false
           use-public-rspm: true
 
-      - name: Install R packages
-        run: Rscript -e 'install.packages(c("knitr", "rmarkdown", "MatchIt", "MatchThem", "mice", "cobalt", "marginaleffects", "dplyr", "ggplot2", "tidyr", "optmatch"))'
+      - name: Install R packages used by the practicals
+        run: Rscript -e 'install.packages(c("knitr", "rmarkdown", "dplyr", "tidyr", "purrr", "ggplot2", "MatchIt", "MatchThem", "WeightIt", "optmatch", "survey", "tableone", "cobalt", "marginaleffects", "mice", "naniar"))'
 
-      - name: Render Chapter 10 site
-        run: quarto render Chapter10/Practicals
+      - name: Render complete Quarto website
+        run: quarto render .
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
@@ -48,7 +50,7 @@ jobs:
       - name: Upload site artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: Chapter10/Practicals/_site
+          path: _site
 
   deploy:
     environment:

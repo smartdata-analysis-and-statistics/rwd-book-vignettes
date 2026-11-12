@@ -190,13 +190,6 @@ Comment on how closely the matched score distributions overlap. Together, these 
 
 Covariate balance checks whether matched treated and control patients have similar measured baseline characteristics. In this practical the matching result is stored in `opt` (a MatchIt object); `w.out` is used for weighting in Practical 4. Use an absolute standardized mean difference (SMD) below 0.1 as a diagnostic threshold, not as proof that confounding has been eliminated.
 
-```{r}
-#| eval: false
-plot(summary(opt))
-```
-
-The summary plot compares standardized differences before and after matching; points nearer zero indicate closer covariate means. Interpret the post-match covariate values against the 0.1 threshold, and distinguish the propensity distance from baseline covariates.
-
 The covariate density plots compare distributions of measured baseline variables between the treatment groups before and after matching. They can show distributional differences that a mean-based SMD may not capture.
 
 ```{r}
@@ -207,7 +200,7 @@ plot(opt, type = "density", which.xs = vars)
 
 Comment on how the plotted covariate distributions change after matching and identify any remaining differences.
 
-The balance table reports numeric SMDs; the love plot displays their absolute values before and after matching so that covariates meeting the 0.1 threshold are easy to identify.
+Use the balance table for numeric SMDs and the love plot for a single visual comparison of absolute SMDs before and after matching. The plot omits the propensity-score distance so the baseline covariates remain the focus.
 
 ```{r}
 #| eval: false

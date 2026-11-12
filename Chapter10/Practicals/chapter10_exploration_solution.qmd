@@ -1,9 +1,6 @@
 ---
 title: "Dealing with Missing Data: Data Preparation and Exploration"
 subtitle: "Computer Practical Solution"
-author:
-  - name: "Thomas Debray"
-    affiliation: "Smart Data Analysis and Statistics"
 format:
   html:
     toc: true
@@ -19,6 +16,7 @@ editor:
     wrap: sentence
 ---
 
+These practicals are based on the online chapter [“Dealing with missing data”](https://smartdata-analysis-and-statistics.github.io/comparative-effectiveness/chapter_09.html), which complements the material in *Comparative Effectiveness and Personalized Medicine Research Using Real-World Data* (pp. 165–202). The book chapter is by Thomas P. A. Debray, Hanne Oberman, and Gerko Vink.
 ::: {.callout-note title="How to use this solution"}
 The practical: inspect the shared dataset, summarize missingness, check targeted relationships, and then decide what to do. The exploration and homogeneous treatment-effect practicals load the same 3,000-patient dataset. Each of the two plots has one stated purpose; neither can determine the missingness mechanism.
 :::

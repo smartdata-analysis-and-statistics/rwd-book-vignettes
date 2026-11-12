@@ -1,7 +1,6 @@
 ---
 title: "Dealing with Missing Data: Multiple Imputation Implementation"
 subtitle: "Computer Practical Solutions"
-author: "Thomas Debray"
 format:
   html:
     toc: true
@@ -16,6 +15,7 @@ execute:
 
 ---
 
+These practicals are based on the online chapter [“Dealing with missing data”](https://smartdata-analysis-and-statistics.github.io/comparative-effectiveness/chapter_09.html), which complements the material in *Comparative Effectiveness and Personalized Medicine Research Using Real-World Data* (pp. 165–202). The book chapter is by Thomas P. A. Debray, Hanne Oberman, and Gerko Vink.
 ::: {.callout-note title="How to use this solution"}
 The corresponding exercises are in the [Homogeneous Treatment Effect practical](chapter10_homogeneous_treatment_effect_task.qmd). This solution follows one analysis from start to finish: define the treatment-effect question, impute incomplete covariates under a MAR working assumption, check the imputations, estimate and pool the effect, then test how the conclusion changes if missing log costs may be MNAR.
 :::
@@ -577,3 +577,15 @@ ggplot(plot_data, aes(x = estimate, y = analysis)) +
 
 **Question: Is the tested delta range sufficient for a real application?** Not without external justification. The range is illustrative. Use validation or external cost data, clinical input, and knowledge of care outside the contributing system to decide whether it covers plausible differences. A wider or narrower range may be appropriate in a real study.
 :::
+
+## References
+
+- Cai, M., van Buuren, S., & Vink, G. (2023). Graphical and numerical diagnostic tools to assess multiple imputation models by posterior predictive checking. *Heliyon, 9*(6), e17077. [https://doi.org/10.1016/j.heliyon.2023.e17077](https://doi.org/10.1016/j.heliyon.2023.e17077)
+- Cro, S., Morris, T. P., Kenward, M. G., & Carpenter, J. R. (2020). Sensitivity analysis for clinical trials with missing continuous outcome data using controlled multiple imputation: A practical guide. *Statistics in Medicine, 39*(21), 2815–2842. [https://doi.org/10.1002/sim.8569](https://doi.org/10.1002/sim.8569)
+- Debray, T. P. A., Oberman, H., & Vink, G. (2026). Dealing with missing data. In T. P. A. Debray, T.-L. Nguyen, & R. W. Platt (Eds.), *Comparative Effectiveness and Personalized Medicine Research Using Real-World Data* (pp. 165–202). CRC Press. [https://doi.org/10.1201/9781003300809-10](https://doi.org/10.1201/9781003300809-10)
+- Leyrat, C., Seaman, S. R., White, I. R., Douglas, I., Smeeth, L., Kim, J., Resche-Rigon, M., Carpenter, J. R., & Williamson, E. J. (2019). Propensity score analysis with partially observed covariates: How should multiple imputation be used? *Statistical Methods in Medical Research, 28*(1), 3–19. [https://doi.org/10.1177/0962280217713032](https://doi.org/10.1177/0962280217713032)
+- Oberman, H. I., van Buuren, S., & Vink, G. (2021). Missing the point: Non-convergence in iterative imputation algorithms. *Proceedings of the 24th International Conference on Artificial Intelligence and Statistics*. [https://arxiv.org/abs/2110.11951](https://arxiv.org/abs/2110.11951)
+- Rubin, D. B. (1987). *Multiple Imputation for Nonresponse in Surveys*. John Wiley & Sons. [https://doi.org/10.1002/9780470316696](https://doi.org/10.1002/9780470316696)
+- van Buuren, S. (2018). *Flexible Imputation of Missing Data* (2nd ed.). CRC Press. [https://doi.org/10.1201/9780429492259](https://doi.org/10.1201/9780429492259)
+- van Buuren, S., & Groothuis-Oudshoorn, K. (2011). mice: Multivariate imputation by chained equations in R. *Journal of Statistical Software, 45*(3), 1–67. [https://doi.org/10.18637/jss.v045.i03](https://doi.org/10.18637/jss.v045.i03)
+- White, I. R., Royston, P., & Wood, A. M. (2011). Multiple imputation using chained equations: Issues and guidance for practice. *Statistics in Medicine, 30*(4), 377–399. [https://doi.org/10.1002/sim.4067](https://doi.org/10.1002/sim.4067)

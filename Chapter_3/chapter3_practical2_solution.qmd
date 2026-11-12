@@ -196,33 +196,6 @@ The matched distributions overlap closely, with treated and control patients con
 
 Covariate balance checks whether the matched treated and control groups have similar measured baseline characteristics. Here `opt` is the MatchIt object for this matching practical; `w.out` belongs to the weighting practical and is not the object to plot here. Use an absolute standardized mean difference (SMD) below 0.1 as a diagnostic threshold, not as proof that confounding has been eliminated.
 
-```{r}
-#| eval: true
-#| fig-cap: "MatchIt summary plot of standardized differences before and after matching."
-balance_summary <- summary(opt, standardize = TRUE)
-plot(summary(opt), position = NULL)
-balance_order <- rev(seq_len(nrow(balance_summary$sum.all)))
-points(
-  x = abs(balance_summary$sum.all[balance_order, "Std. Mean Diff."]),
-  y = seq_along(balance_order), pch = 21,
-  bg = "#26476b", col = "#26476b"
-)
-points(
-  x = abs(balance_summary$sum.matched[balance_order, "Std. Mean Diff."]),
-  y = seq_along(balance_order), pch = 21,
-  bg = "#80c42b", col = "#80c42b"
-)
-legend("bottomright", legend = c("Before matching", "After matching"),
-       pch = 21, pt.bg = c("#26476b", "#80c42b"),
-       col = c("#26476b", "#80c42b"), bty = "n")
-```
-
-This summary plot compares standardized differences before and after matching; points nearer zero indicate closer covariate means, and the dashed threshold marks an absolute SMD of 0.1.
-
-::: {.callout-tip title="Comment"}
-In this dataset, every baseline-covariate SMD after matching is below 0.1; the largest is 0.086 for age. The propensity-distance SMD is 0.121, but distance is the matching score rather than a baseline covariate, so assess it alongside the pair-distance and overlap diagnostics.
-:::
-
 The covariate density plots compare the distributions of each measured baseline variable between treatment groups before and after matching. They can reveal distributional differences that a mean-based SMD may not show.
 
 ```{r}
@@ -235,15 +208,14 @@ plot(opt, type = "density", which.xs = vars)
 After matching, the plotted covariate distributions are generally closer between DMT1 and DMT0 than they were before matching, consistent with the SMD results. Review each panel for remaining differences; no plot can assess unmeasured confounding.
 :::
 
-The balance table reports the numeric pre- and post-match SMDs. The love plot displays their absolute values together, making it easy to see which covariates meet the 0.1 threshold.
+The balance table reports the numeric pre- and post-match SMDs. The love plot below shows their absolute values in one comparison; it omits propensity-score distance so the baseline covariates remain the focus.
 
 ```{r}
 #| eval: true
 bal.tab(opt, un = TRUE, thresholds = c(m = .1))
 love.plot(opt, stats = "mean.diffs", abs = TRUE,
           thresholds = c(m = .1), drop.distance = TRUE,
-          sample.names = c("Before matching", "After matching"),
-          colors = c("#26476b", "#80c42b"))
+          sample.names = c("Before matching", "After matching"))
 ```
 
 ::: {.callout-tip title="Comment"}

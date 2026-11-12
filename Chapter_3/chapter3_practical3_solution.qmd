@@ -238,19 +238,50 @@ data.frame(
 :::
 
 ::: {.callout-note title="Optional: estimate the ATE instead"}
-The ATT pools stratum-specific effects using the distribution of treated patients across strata. For an ATE, fit stratum-specific treatment effects and standardize over the full cohort instead:
+The main analysis pools stratum-specific rate ratios using each stratum's share of treated patients, so the target is the ATT. To follow the same stratification procedure for an ATE, use each stratum's share of the full cohort instead. The bootstrap below repeats propensity-score estimation, quintile formation, stratum-specific outcome models, and pooling; it changes only the target weights.
 
 ```{r}
 #| eval: true
-fit_stratified <- glm(
-  y ~ treatment * factor(stratum) + offset(log(years)),
-  family = poisson(), data = dat
+stratified_ate <- function(data, indices) {
+  d <- data[indices, , drop = FALSE]
+  ps_fit_b <- try(glm(ps_formula, data = d, family = binomial()), silent = TRUE)
+  if (inherits(ps_fit_b, "try-error")) return(NA_real_)
+  d$ps <- predict(ps_fit_b, type = "response")
+  cuts_b <- unique(quantile(d$ps, probs = seq(0, 1, .2)))
+  if (length(cuts_b) != 6) return(NA_real_)
+  d$stratum <- cut(d$ps, cuts_b, include.lowest = TRUE, labels = FALSE)
+  group_counts <- table(factor(d$stratum, levels = 1:5), d$treatment)
+  if (any(group_counts == 0)) return(NA_real_)
+
+  effects_b <- lapply(1:5, function(h) {
+    dh <- d[d$stratum == h, ]
+    fit <- try(glm(y ~ treatment + offset(log(years)),
+                   family = poisson(link = "log"), data = dh), silent = TRUE)
+    if (inherits(fit, "try-error")) return(c(n = NA_real_, ARR = NA_real_))
+    c(n = nrow(dh), ARR = unname(exp(coef(fit)["treatmentDMT1"])))
+  })
+  effects_b <- do.call(rbind, effects_b)
+  if (any(!is.finite(effects_b))) return(NA_real_)
+  population_weights <- effects_b[, "n"] / sum(effects_b[, "n"])
+  sum(population_weights * effects_b[, "ARR"])
+}
+
+set.seed(1854)
+n_boot_ate <- 500
+boot_ATE <- replicate(
+  n_boot_ate,
+  stratified_ate(dat, sample.int(nrow(dat), replace = TRUE))
 )
-avg_comparisons(
-  fit_stratified, variables = "treatment", comparison = "ratioavg",
-  newdata = dat, vcov = "HC3"
+valid_ATE <- boot_ATE[is.finite(boot_ATE)]
+ATE_summary <- data.frame(
+  pooled_ATE = stratified_ate(dat, seq_len(nrow(dat))),
+  bootstrap_ci_lower = quantile(valid_ATE, .025, names = FALSE),
+  bootstrap_ci_upper = quantile(valid_ATE, .975, names = FALSE),
+  successful_replicates = length(valid_ATE),
+  attempted_replicates = n_boot_ate
 )
+ATE_summary
 ```
 
-The change is the target distribution used for averaging: all participants (`newdata = dat`) rather than DMT1 patients, whose stratum shares define the ATT. The treatment-by-stratum interaction allows effects to differ across strata. Check support and balance within each stratum before interpreting this ATE.
+This produces a full-cohort-share-weighted mean of the stratum-specific rate ratios. It follows the same pooled-rate-ratio summary as the ATT example but averages over the whole cohort rather than the treated cohort. In this dataset, the propensity-score SMD exceeds 0.1 in every quintile and the highest-score stratum has only 79 DMT0 patients. Treat the displayed ATE as an illustration of the calculation, not as a well-supported causal estimate, until the within-stratum balance and support are improved.
 :::

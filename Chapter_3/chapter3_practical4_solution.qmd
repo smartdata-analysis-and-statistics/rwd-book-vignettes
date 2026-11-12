@@ -25,11 +25,11 @@ Complete the tasks and discussion questions before opening the [worked solution]
 
 ![ATT propensity score weighting: DMT1 patients receive weight 1, while DMT0 patients receive weights proportional to their odds of treatment. The weighted DMT0 group represents the treated population.](figures/ps-weighting-att.svg){width=100%}
 
-In the reference example, a logistic propensity-score model is fitted using age, sex, previous DMT efficacy, and previous relapse count. For the ATT, each treated patient receives weight 1; each control receives `PS / (1 - PS)`. This reweights controls toward the measured baseline profile of treated patients. WeightIt estimates these weights, balance is checked with cobalt, and a weighted Poisson model with log follow-up time as an offset estimates the relapse rate ratio. No weight truncation is applied in the reference code.
+This practical estimates the propensity score from the six prespecified pretreatment covariates used in Practicals 1–3: age, sex, previous DMT efficacy, premedical cost, prior relapse count, and symptom count. For the ATT, each treated patient receives weight 1; each control receives `PS / (1 - PS)`. This reweights controls toward the measured baseline profile of treated patients. WeightIt estimates these weights, balance is checked with cobalt, and a weighted Poisson model with log follow-up time as an offset estimates the relapse rate ratio. No weight truncation is applied in the primary analysis.
 
 # 2. Prepare data
 
-Read the cohort, inspect its structure and treatment counts, then estimate the ATT weights with WeightIt. Use the same four baseline covariates as the reference method; exclude outcome and follow-up variables from the propensity-score model.
+Read the cohort, inspect its structure and treatment counts, then estimate the ATT weights with WeightIt. Use the same six prespecified pretreatment covariates as Practicals 1–3; exclude outcome and follow-up variables from the propensity-score model.
 
 **Task:** Load the dataset and libraries, inspect missingness and treatment counts, then estimate the propensity scores and ATT weights. Confirm the treatment groups and the variables used in the PS model.
 
@@ -98,7 +98,7 @@ c(max_weight = max(control_w), share_over_10 = mean(control_w > 10))
 
 **Results:** In this generated dataset, the control-weight median is 1.65, the 90th percentile is 7.05, and the maximum is 90.80; about 5.9% of control weights exceed 10. The primary analysis applies no truncation, matching the reference code, which estimated unstabilized ATT weights. Truncation is therefore not silently used; any sensitivity analysis should prespecify its cutoff and report how many weights changed, plus ESS and balance after truncation.
 
-## Control ESS
+## Effective sample size
 
 **Task:** Calculate the effective sample size (ESS) of each treatment group from the weights and compare it with its unweighted count. Explain what the difference implies for information and precision. `summary(w.out)$ess` is `NULL` in the installed WeightIt version, so calculate ESS directly as `(sum of weights)^2 / sum of squared weights`.
 
@@ -116,7 +116,7 @@ ess_table
 
 **Results:** The control ESS is about 644, compared with 2,396 actual controls; the treated ESS is 7,604 because all treated ATT weights equal one. The unequal control weights reduce the controls’ effective information to about 27% of their nominal count, which can reduce precision.
 
-## Weighted SMDs
+## Weighted standardized mean differences (SMDs)
 
 **Task:** Compare unweighted and weighted standardized mean differences for the modeled covariates and estimated propensity score. State whether every absolute weighted SMD is below 0.1, and identify the largest one.
 
@@ -155,4 +155,35 @@ exp(confint(weighted.fit)["treatmentDMT1", ])
 1. Since ATT control weights are `PS/(1-PS)`, the denominator approaches zero as PS approaches one; such controls have treated-like covariates and are scarce in the control group, signaling weak overlap.
 2. Truncation can reduce variance and limit domination by a few observations, but it can reintroduce imbalance and shift the effective target population. Report the cutoff, affected observations, ESS, balance, and both primary and sensitivity estimates.
 3. Balance only covers measured covariates represented in the PS model. Unmeasured confounding, poor measurement, model misspecification, and lack of positivity may still bias the ATT.
+:::
+
+::: {.callout-note title="Optional: estimate the ATE instead"}
+The main analysis estimates the ATT using weights of 1 for DMT1 and `PS/(1-PS)` for DMT0. To target the ATE, refit the same propensity-score model using ATE weights, then repeat the weight, ESS, and balance checks before fitting the same survey-weighted Poisson outcome model. ATE weights are `1/PS` for DMT1 and `1/(1-PS)` for DMT0. The full cohort is the target only where both treatments have adequate support.
+
+```{r}
+#| eval: true
+w_ate.out <- weightit(ps_formula, data = dat, method = "ps", estimand = "ATE")
+dat$w_ate <- w_ate.out$weights
+
+dat %>% group_by(treatment) %>%
+  summarise(
+    n = n(), min = min(w_ate), median = median(w_ate),
+    max = max(w_ate), ess = sum(w_ate)^2 / sum(w_ate^2),
+    .groups = "drop"
+  )
+bal.tab(w_ate.out, stats = c("m", "v"), un = TRUE,
+        thresholds = c(m = .1))
+
+weighted.ate.data <- svydesign(ids = ~1, data = dat, weights = ~w_ate)
+weighted.ate.fit <- svyglm(
+  y ~ treatment + offset(log(years)),
+  family = poisson(link = "log"), design = weighted.ate.data
+)
+exp(coef(weighted.ate.fit)["treatmentDMT1"])
+exp(confint(weighted.ate.fit)["treatmentDMT1", ])
+```
+
+::: {.callout-tip title="ATE results and interpretation"}
+The ATE-weighted relapse rate ratio is **0.734 (95% CI 0.629–0.855)**. All modeled covariates and the propensity score have adjusted absolute SMDs below 0.1; the largest is 0.055 for premedical cost. However, the control ESS is about 930 (from 2,396 controls) and the treated ESS about 6,239 (from 7,604 treated patients), and the maximum weights are 91.8 for DMT0 and 31.4 for DMT1. Thus, measured balance is close, but weight concentration reduces effective information and warrants attention to support and precision. This ATE is supported only for the full cohort to the extent that both treatments are represented across its covariate profiles.
+:::
 :::

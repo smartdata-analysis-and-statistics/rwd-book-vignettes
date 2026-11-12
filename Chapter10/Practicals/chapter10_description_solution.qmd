@@ -1,7 +1,6 @@
 ---
 title: "Dealing with missing data: Data Preparation and Exploration"
 subtitle: "Computer Practical Solutions"
-author: "Thomas Debray"
 format:
   html:
     toc: true
@@ -14,6 +13,7 @@ execute:
   message: false
 ---
 
+These practicals are based on the online chapter [“Dealing with missing data”](https://smartdata-analysis-and-statistics.github.io/comparative-effectiveness/chapter_09.html), which complements the material in *Comparative Effectiveness and Personalized Medicine Research Using Real-World Data* (pp. 165–202). The book chapter is by Thomas P. A. Debray, Hanne Oberman, and Gerko Vink.
 ::: {.callout-note title="How to use this solution"}
 The corresponding learner activities are in the [Data Preparation and Exploration practical](chapter10_exploration_task.qmd). Try each question before opening the worked answer.
 :::

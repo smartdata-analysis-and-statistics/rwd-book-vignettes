@@ -1,8 +1,6 @@
 ---
 title: "Dealing with Missing Data: Multiple Imputation Implementation"
 subtitle: "Computer Practical"
-author:
-  - name: "Thomas Debray"
 format:
   html:
     toc: true
@@ -20,6 +18,7 @@ editor:
 
 ---
 
+These practicals are based on the online chapter [“Dealing with missing data”](https://smartdata-analysis-and-statistics.github.io/comparative-effectiveness/chapter_09.html), which complements the material in *Comparative Effectiveness and Personalized Medicine Research Using Real-World Data* (pp. 165–202). The book chapter is by Thomas P. A. Debray, Hanne Oberman, and Gerko Vink.
 ## The case continues: from data audit to treatment-effect analysis
 
 In the [exploration practical](chapter10_exploration_task.qmd), you found that age, log premedical cost, and previous relapse count are incomplete. Now use that handoff to estimate the population average treatment effect (ATE). The causal structure, adjustment set, and outcome model are supplied.
@@ -169,7 +168,7 @@ plot(imp)
 densityplot(imp, ~ age + logPremedicalcost + prerelapseNum)
 ```
 
-The table gives a classical, unsplit Gelman–Rubin potential scale reduction factor (PSRF) and the average lag-1 correlation between successive chain means for each incomplete variable. A PSRF near 1 suggests similar within- and between-chain variability; the autocorrelation summarizes dependence across iterations. These simple diagnostics are calculated from `mice`'s stored chain means and avoid an optional `rstan` dependency. They are not rank-normalized split R-hat diagnostics, and they do not establish convergence or correct model specification. Inspect trace plots for persistent drift or separated chains, and assess whether imputed values and their relationships with treatment and outcome are coherent. Recent guidance notes that there is no universal quantitative convergence test for iterative imputation algorithms ([Oberman et al., 2024](https://doi.org/10.1002/bimj.202200107)).
+The table gives a classical, unsplit Gelman–Rubin potential scale reduction factor (PSRF) and the average lag-1 correlation between successive chain means for each incomplete variable. A PSRF near 1 suggests similar within- and between-chain variability; the autocorrelation summarizes dependence across iterations. These simple diagnostics are calculated from `mice`'s stored chain means and avoid an optional `rstan` dependency. They are not rank-normalized split R-hat diagnostics, and they do not establish convergence or correct model specification. Inspect trace plots for persistent drift or separated chains, and assess whether imputed values and their relationships with treatment and outcome are coherent. Oberman, van Buuren, and Vink (2021) discuss the challenges of assessing convergence in iterative imputation algorithms and the lack of consensus on a single evaluation approach.
 
 #### Your tasks
 
@@ -438,3 +437,15 @@ Use the comparison table and plot from the solution to write a short conclusion 
 
 - Which aspects of the final conclusion are supported by the observed data, and which depend on MAR or delta assumptions?
 - Would you regard the tested delta range as sufficient for a real application? What evidence would guide your choice?
+
+## References
+
+- Cai, M., van Buuren, S., & Vink, G. (2023). Graphical and numerical diagnostic tools to assess multiple imputation models by posterior predictive checking. *Heliyon, 9*(6), e17077. [https://doi.org/10.1016/j.heliyon.2023.e17077](https://doi.org/10.1016/j.heliyon.2023.e17077)
+- Cro, S., Morris, T. P., Kenward, M. G., & Carpenter, J. R. (2020). Sensitivity analysis for clinical trials with missing continuous outcome data using controlled multiple imputation: A practical guide. *Statistics in Medicine, 39*(21), 2815–2842. [https://doi.org/10.1002/sim.8569](https://doi.org/10.1002/sim.8569)
+- Debray, T. P. A., Oberman, H., & Vink, G. (2026). Dealing with missing data. In T. P. A. Debray, T.-L. Nguyen, & R. W. Platt (Eds.), *Comparative Effectiveness and Personalized Medicine Research Using Real-World Data* (pp. 165–202). CRC Press. [https://doi.org/10.1201/9781003300809-10](https://doi.org/10.1201/9781003300809-10)
+- Leyrat, C., Seaman, S. R., White, I. R., Douglas, I., Smeeth, L., Kim, J., Resche-Rigon, M., Carpenter, J. R., & Williamson, E. J. (2019). Propensity score analysis with partially observed covariates: How should multiple imputation be used? *Statistical Methods in Medical Research, 28*(1), 3–19. [https://doi.org/10.1177/0962280217713032](https://doi.org/10.1177/0962280217713032)
+- Oberman, H. I., van Buuren, S., & Vink, G. (2021). Missing the point: Non-convergence in iterative imputation algorithms. *Proceedings of the 24th International Conference on Artificial Intelligence and Statistics*. [https://arxiv.org/abs/2110.11951](https://arxiv.org/abs/2110.11951)
+- Rubin, D. B. (1987). *Multiple Imputation for Nonresponse in Surveys*. John Wiley & Sons. [https://doi.org/10.1002/9780470316696](https://doi.org/10.1002/9780470316696)
+- van Buuren, S. (2018). *Flexible Imputation of Missing Data* (2nd ed.). CRC Press. [https://doi.org/10.1201/9780429492259](https://doi.org/10.1201/9780429492259)
+- van Buuren, S., & Groothuis-Oudshoorn, K. (2011). mice: Multivariate imputation by chained equations in R. *Journal of Statistical Software, 45*(3), 1–67. [https://doi.org/10.18637/jss.v045.i03](https://doi.org/10.18637/jss.v045.i03)
+- White, I. R., Royston, P., & Wood, A. M. (2011). Multiple imputation using chained equations: Issues and guidance for practice. *Statistics in Medicine, 30*(4), 377–399. [https://doi.org/10.1002/sim.4067](https://doi.org/10.1002/sim.4067)

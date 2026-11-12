@@ -207,6 +207,23 @@ To target the ATE instead, change the rows used for standardization from DMT1 pa
 
 ```{r}
 #| eval: true
+# ATE support check: count observations in either treatment group
+# outside the other group's observed PS range.
+control_range <- range(dat$ps[dat$treatment == "DMT0"])
+treated_range <- range(dat$ps[dat$treatment == "DMT1"])
+ps_support_ate <- data.frame(
+  treatment = c("DMT0", "DMT1"),
+  n_outside_other_range = c(
+    sum(dat$ps[dat$treatment == "DMT0"] < treated_range[1] |
+          dat$ps[dat$treatment == "DMT0"] > treated_range[2]),
+    sum(dat$ps[dat$treatment == "DMT1"] < control_range[1] |
+          dat$ps[dat$treatment == "DMT1"] > control_range[2])
+  )
+) %>%
+  dplyr::mutate(percent = 100 * n_outside_other_range /
+                  c(sum(dat$treatment == "DMT0"), sum(dat$treatment == "DMT1")))
+ps_support_ate
+
 ate <- avg_comparisons(
   fit_ps, variables = "treatment", comparison = "ratioavg",
   newdata = dat, vcov = "HC3"
@@ -214,7 +231,7 @@ ate <- avg_comparisons(
 ate
 ```
 
-The specific change is `newdata = dat` instead of `newdata = subset(dat, treatment == "DMT1")`. The former averages the counterfactual outcomes over everyone (ATE); the latter averages over those treated (ATT).
+The specific change is `newdata = dat` instead of `newdata = subset(dat, treatment == "DMT1")`. The former averages the counterfactual outcomes over everyone (ATE); the latter averages over those treated (ATT). For the ATE, reassess support across the full cohort, including whether both treatment groups are represented across the covariate profiles; the ATT-focused check of treated patients outside the control score range is not sufficient by itself.
 :::
 
 # 5. Compare ATT estimates across methods
@@ -253,12 +270,21 @@ knitr::kable(comparison_table)
 1. Enter the ATT estimate and confidence interval from each practical, and identify the target population for each method.
 2. Why do the estimates differ even though each practical aims to estimate the ATT? In your answer, compare how matching, stratification, weighting, and PS regression adjustment form their comparisons, use the PS, and depend on design or model choices.
 3. When would you use each method, and which would you recommend for this dataset and target question? Explain your choice using support, balance, target population, model fit, influence, and precision; do not choose only by which estimate is closest to the others.
+4. Summarize the feasibility and diagnostic criteria in the table. Which criteria are shared across the practicals, and which are specific to each method?
 
 ::: {.callout-tip title="Comments and answers"}
 1. The table reports these primary estimates and targets: matching, **0.772 (95% CI 0.674–0.869)**, matched treated subset; stratification, **0.770 (0.699–0.892)**, DMT1 patients pooled by treated stratum shares; weighting, **0.721 (0.635–0.817)**, treated target represented with control treatment-odds weights; PS regression adjustment, **0.795 (0.715–0.875)**, DMT1 patients standardized by counterfactual predictions.
 2. All estimates favor DMT1 and their confidence intervals overlap, so point-estimate differences alone do not demonstrate meaningful disagreement. Matching compares selected close-score pairs and retains only 1,996 of 7,604 treated patients; stratification compares within score groups then averages stratum rate ratios; weighting reweights controls to represent the treated distribution; PS regression adjustment models the outcome using treatment and PS, then standardizes predictions over treated patients. These use different comparison sets and summaries and have different sensitivity to finite-sample balance, weak support, extreme weights, and model form. The pooled stratum rate-ratio summary need not equal a marginal standardized rate ratio. Austin (2011) compares these four methods and discusses balance diagnostics; see the References.
 3. Matching is useful when close comparisons are important and the matched treated subset is an acceptable target; its caliper and retained sample should be examined. Stratification is useful for transparent within-score comparisons if strata retain adequate overlap and balance; coarse strata can leave residual imbalance. Weighting is useful for retaining the treated target, provided control weights and effective sample size are acceptable. Regression adjustment is useful when a compact PS-based outcome model is credible; inspect overlap, residuals, influence, and PS functional form. For this dataset, no method is a clear winner on point estimates alone: matching drops most treated patients, while the other methods retain the treated target but still need credible overlap and method-specific balance/weight/model diagnostics. The PS-adjusted ATT is stable to the quadratic sensitivity model, but its residual and local-support findings warrant caution. Prefer the method that best preserves the intended target while passing its diagnostics; none can establish no unmeasured confounding.
+4. Shared across the practicals are defining the estimand and target population, checking whether the PS provides support for the target comparison, assessing measured baseline covariates, and reporting uncertainty. The diagnostics used to assess these ideas differ by method: matching checks matched-patient retention and pair distances; stratification checks treatment counts and balance within each stratum; weighting checks weight concentration, ESS, and weighted balance; PS regression adjustment checks outcome-model fit and PS form, influential observations, and extrapolation. In this dataset the stratification diagnostics show residual within-stratum imbalance, while weighting achieves small measured SMDs but has reduced control ESS; PS regression adjustment has a stable sensitivity estimate but still requires scrutiny of its residual and local-support findings.
 :::
+
+| Method | Feasibility and diagnostics to report |
+|---|---|
+| Matching | Common support; number and proportion of treated patients retained; within-pair score distances relative to the caliper; and pre/post-match covariate balance. |
+| Stratification | Treatment counts within each stratum; within-stratum covariate balance; and whether each stratum contains both treatment groups with adequate support. |
+| Weighting | Weight distribution and extremes; effective sample size; weighted covariate balance; and any prespecified truncation rule. |
+| PS regression adjustment | PS support/overlap; outcome-model fit and specification, including the PS functional form; influential observations; extrapolation for treated patients; and sensitivity to reasonable PS model forms. |
 
 # References
 

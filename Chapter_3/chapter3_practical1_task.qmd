@@ -36,7 +36,10 @@ By completing this practical, you will be able to:
 - inspect overlap in propensity-score distributions; and
 - explain why balance, overlap, and the target estimand matter more than treatment-prediction accuracy.
 
-# 2. Prepare and compare the baseline data
+# 2. Methods based on the propensity score
+
+The propensity score (PS) summarizes each patient's probability of receiving treatment given measured baseline characteristics. It can be used in several ways to make treated and untreated groups more comparable. In this practical, you will inspect the baseline data and estimate the PS. The next practicals show how to apply it using matching (Practical 2), stratification (Practical 3), weighting (Practical 4), and regression adjustment for the propensity score (Practical 5). Each method has different assumptions and diagnostics; those will be introduced alongside the method where they are used.
+
 
 ```{r}
 #| eval: false
@@ -113,47 +116,3 @@ ggplot(dat, aes(x = ps, fill = treatment)) +
 dat %>% group_by(treatment) %>%
   summarise(n = n(), min = min(ps), median = median(ps), max = max(ps))
 ```
-
-**Questions for discussion:**
-
-1. Which baseline characteristics differ most between the two treatment groups before adjustment? Refer to the SMDs.
-2. What does overlap in the propensity-score distributions tell you? What might limited overlap mean for the comparison?
-3. Why should the outcome and post-treatment variables not be used to estimate the propensity score?
-4. Why is treatment-prediction accuracy not the main criterion for choosing a propensity-score model?
-
-# 3. A shared framework for assessing the analyses
-
-Several checks apply across methods: define the estimand and target population; inspect whether both treatments occur across the covariate profiles in that target; assess the measured covariates used for adjustment; and report the information and uncertainty supporting the estimate. A check's implementation depends on the method. For example, pair distance is specific to matching, while extreme weights and effective sample size are especially important for weighting.
-
-**Tasks:**
-
-1. Complete the table using the methods as implemented in Practicals 2–5.
-2. Mark which feasibility checks are shared across the methods and which are method-specific.
-3. Explain why high treated-patient retention is relevant to ATT matching but is not a universal pass/fail condition for every method.
-
-| Method | Feasibility and diagnostics to report | Target in these practicals |
-|---|---|---|
-| Matching |  |  |
-| Stratification |  |  |
-| Weighting |  |  |
-| PS regression adjustment |  |  |
-
-**Questions for discussion:**
-
-1. Which checks should appear in every propensity-score analysis, regardless of the adjustment method?
-2. How do the diagnostics for PS regression adjustment differ from balance checks after matching, stratification, and weighting?
-3. Why is the treatment effect not the first criterion to use when choosing among methods?
-
-::: {.callout-note title="Optional: prepare ATE weights"}
-This practical estimates the propensity score but does not estimate a treatment effect. The code below shows how the same PS is converted to ATT or ATE weights; use the ATE weights in a later outcome analysis to target the full cohort.
-
-```{r}
-#| eval: false
-dat$w_att <- ifelse(dat$treatment == "DMT1", 1,
-                    dat$ps / (1 - dat$ps))
-dat$w_ate <- ifelse(dat$treatment == "DMT1", 1 / dat$ps,
-                    1 / (1 - dat$ps))
-```
-
-The PS model does not change. The weights change: ATT keeps DMT1 patients at weight 1 and reweights DMT0 patients; ATE reweights both groups to represent the full cohort. These weights alone are not treatment-effect estimates.
-:::

@@ -1,9 +1,6 @@
 ---
 title: "Dealing with Missing Data: Data Preparation and Exploration"
 subtitle: "Computer Practical"
-author:
-  - name: "Thomas Debray"
-    affiliation: "Smart Data Analysis and Statistics"
 format:
   html:
     toc: true
@@ -19,6 +16,7 @@ editor:
     wrap: sentence
 ---
 
+These practicals are based on the online chapter [“Dealing with missing data”](https://smartdata-analysis-and-statistics.github.io/comparative-effectiveness/chapter_09.html), which complements the material in *Comparative Effectiveness and Personalized Medicine Research Using Real-World Data* (pp. 165–202). The book chapter is by Thomas P. A. Debray, Hanne Oberman, and Gerko Vink.
 # Introduction
 
 You are helping a team compare dimethyl fumarate (`DMF`) with teriflunomide (`TERI`) using real-world data. Some baseline covariates are incomplete. Your job is to check the data and prepare a short handoff for the analyst who will handle the missing values.

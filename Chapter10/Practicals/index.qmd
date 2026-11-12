@@ -7,6 +7,7 @@ format:
     number-sections: false
 ---
 
+These practicals are based on the online chapter [“Dealing with missing data”](https://smartdata-analysis-and-statistics.github.io/comparative-effectiveness/chapter_09.html), which complements the material in *Comparative Effectiveness and Personalized Medicine Research Using Real-World Data* (pp. 165–202). The book chapter is by Thomas P. A. Debray, Hanne Oberman, and Gerko Vink.
 These practicals use a simulated real-world study of dimethyl fumarate (`DMF`) versus teriflunomide (`TERI`) in 3,000 patients with multiple sclerosis. The outcome is the number of relapse episodes over follow-up. Baseline characteristics—including age, gender, prior treatment efficacy, prior medical costs, and relapse history—help control confounding, but some are deliberately incomplete.
 
 The practicals build from data preparation and missingness exploration to multiple imputation and treatment-effect estimation. They distinguish variables required by the causal adjustment set from auxiliary information that can help predict missing values, and consider how conclusions depend on assumptions about why data are missing (MCAR, MAR, or MNAR). The datasets supplied here are simulated teaching data, not patient records; this allows the exercises to illustrate missingness and confounding while keeping the source data reproducible. Each practical is provided as a Quarto source file (`.qmd`), with learner tasks and worked solutions kept in separate files.

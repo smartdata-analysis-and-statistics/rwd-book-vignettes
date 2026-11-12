@@ -187,6 +187,23 @@ To target the ATE instead, change the rows used for standardization from DMT1 pa
 
 ```{r}
 #| eval: false
+# ATE support check: count observations in either treatment group
+# outside the other group's observed PS range.
+control_range <- range(dat$ps[dat$treatment == "DMT0"])
+treated_range <- range(dat$ps[dat$treatment == "DMT1"])
+ps_support_ate <- data.frame(
+  treatment = c("DMT0", "DMT1"),
+  n_outside_other_range = c(
+    sum(dat$ps[dat$treatment == "DMT0"] < treated_range[1] |
+          dat$ps[dat$treatment == "DMT0"] > treated_range[2]),
+    sum(dat$ps[dat$treatment == "DMT1"] < control_range[1] |
+          dat$ps[dat$treatment == "DMT1"] > control_range[2])
+  )
+) %>%
+  dplyr::mutate(percent = 100 * n_outside_other_range /
+                  c(sum(dat$treatment == "DMT0"), sum(dat$treatment == "DMT1")))
+ps_support_ate
+
 ate <- avg_comparisons(
   fit_ps, variables = "treatment", comparison = "ratioavg",
   newdata = dat, vcov = "HC3"
@@ -194,7 +211,7 @@ ate <- avg_comparisons(
 ate
 ```
 
-The specific change is `newdata = dat` instead of `newdata = subset(dat, treatment == "DMT1")`. The former averages the counterfactual outcomes over everyone (ATE); the latter averages over those treated (ATT).
+The specific change is `newdata = dat` instead of `newdata = subset(dat, treatment == "DMT1")`. The former averages the counterfactual outcomes over everyone (ATE); the latter averages over those treated (ATT). For the ATE, reassess support across the full cohort, including whether both treatment groups are represented across the covariate profiles; the ATT-focused check of treated patients outside the control score range is not sufficient by itself.
 :::
 
 # 5. Compare ATT estimates across methods
@@ -213,6 +230,17 @@ Collect the primary ATT estimate and 95% confidence interval from each method. F
 1. Enter the ATT estimate and confidence interval from each practical, and identify the target population for each method.
 2. Why do the estimates differ even though each practical aims to estimate the ATT? In your answer, compare how matching, stratification, weighting, and PS regression adjustment form their comparisons, use the PS, and depend on design or model choices.
 3. When would you use each method, and which would you recommend for this dataset and target question? Explain your choice using support, balance, target population, model fit, influence, and precision; do not choose only by which estimate is closest to the others.
+4. Summarize the feasibility and diagnostic criteria in the table. Which criteria are shared across the practicals, and which are specific to each method?
+
+
+Complete the diagnostic comparison below using the results from Practicals 2–5. Distinguish checks shared across methods from method-specific checks.
+
+| Method | Feasibility and diagnostics to report |
+|---|---|
+| Matching |  |
+| Stratification |  |
+| Weighting |  |
+| PS regression adjustment |  |
 
 # References
 

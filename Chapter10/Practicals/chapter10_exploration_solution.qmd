@@ -25,6 +25,16 @@ The practical: inspect the shared dataset, summarize missingness, check targeted
 
 The team is comparing DMF with TERI, but age, log premedical cost, and previous relapse count are incomplete. This audit identifies what the observed data can tell us and what the imputation analyst should preserve. The supplied adjustment set defines the causal analysis; exploration helps plan imputation, not redefine the question.
 
+## Learning objectives
+
+By the end of this practical, you should be able to:
+
+- define the treatment, outcome, follow-up period, and target estimand;
+- assess basic data quality and describe the extent and patterns of missingness;
+- distinguish confounders in the supplied adjustment set from auxiliary predictors for imputation;
+- explore observed covariate and outcome relationships without treating them as evidence of the missingness mechanism; and
+- recommend information and checks to carry forward to the imputation analysis.
+
 # 1. Clarify the question before exploring
 
 The estimand is the population ATE, $E(Y^{DMF} - Y^{TERI})$. The supplied adjustment set is `age`, `gender`, `prevDMTefficacy`, `logPremedicalcost`, and `prerelapseNum`. The substantive model also includes `numSymptoms` and adjusts for follow-up using `offset(log(years))`.

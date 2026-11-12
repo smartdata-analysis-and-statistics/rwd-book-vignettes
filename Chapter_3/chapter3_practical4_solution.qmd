@@ -21,6 +21,15 @@ This practical is based on the online chapter [“Confounding adjustment using p
 Complete the tasks and discussion questions before opening the [worked solution](chapter3_practical4_solution.qmd). The analysis follows Sections 3.6.1–3.6.3 of the [comparative-effectiveness chapter](https://smartdata-analysis-and-statistics.github.io/comparative-effectiveness/chapter_06.html#propensity-score-weighting).
 :::
 
+# Learning objectives
+
+By the end of this practical, you should be able to:
+
+- construct ATT weights, assigning weight 1 to DMT1 patients and `PS / (1 - PS)` to DMT0 patients;
+- assess the weighted analysis using weight distributions, extreme weights, effective sample sizes, propensity-score support, and standardized mean differences;
+- estimate and interpret a weighted Poisson relapse rate ratio with follow-up time included as an offset; and
+- explain how weight concentration can affect precision and how changing the weighting estimand changes the target population.
+
 # 1. How ATT weighting works
 
 ![ATT propensity score weighting: DMT1 patients receive weight 1, while DMT0 patients receive weights proportional to their odds of treatment. The weighted DMT0 group represents the treated population.](figures/ps-weighting-att.svg){width=100%}

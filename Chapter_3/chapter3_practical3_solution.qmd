@@ -21,6 +21,15 @@ This practical is based on the online chapter [“Confounding adjustment using p
 The companion [task page](chapter3_practical3_task.qmd) contains the prompts. Review each task and discussion question before the comments and answers below.
 :::
 
+# Learning objectives
+
+By the end of this practical, you should be able to:
+
+- estimate propensity scores and form quintiles using cut points from the full cohort's score distribution;
+- assess whether each stratum contains both treatments and has adequate within-stratum balance and support;
+- estimate stratum-specific relapse rate ratios with follow-up time accounted for, then pool them using treated-group shares to target the ATT; and
+- use a bootstrap that repeats score estimation, stratum formation, outcome fitting, and pooling to quantify uncertainty.
+
 # 1. How stratification works
 
 ![ATT propensity score stratification: patients are divided into score strata, DMT1 and DMT0 are compared within each stratum, and stratum estimates are pooled using the treated-group distribution.](figures/ps-stratification-att.svg){width=100%}

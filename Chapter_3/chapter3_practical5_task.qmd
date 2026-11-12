@@ -21,6 +21,15 @@ This practical is based on the online chapter [“Confounding adjustment using p
 Complete the tasks and discussion questions before opening the [worked solution](chapter3_practical5_solution.qmd). The figure and short method summary introduce the analysis.
 :::
 
+# Learning objectives
+
+By the end of this practical, you should be able to:
+
+- estimate propensity scores from prespecified pretreatment covariates and assess support for comparisons among treated patients;
+- evaluate a Poisson outcome model that includes treatment, the estimated propensity score, and follow-up time, using fit, residual, influence, and functional-form diagnostics;
+- estimate the ATT by predicting both treatment outcomes for each treated patient and summarizing the counterfactual rate contrast; and
+- explain how reasonable outcome-model forms and the target population affect interpretation of the estimate.
+
 # 1. How the regression adjustment for the propensity score works
 
 ![Schematic of propensity-score regression adjustment: estimate the PS from pretreatment covariates, fit a Poisson outcome model using treatment and PS, predict both treatment outcomes for each treated patient, and average the rate ratios to estimate the ATT.](figures/ps-regression-adjustment-att.svg){width=100%}

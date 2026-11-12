@@ -21,6 +21,15 @@ This practical is based on the online chapter [“Confounding adjustment using p
 Complete the tasks and discussion questions before opening the [worked solution](chapter3_practical2_solution.qmd). The figure and short method summary introduce the analysis.
 :::
 
+# Learning objectives
+
+By the end of this practical, you should be able to:
+
+- estimate a propensity score from prespecified pretreatment covariates and perform 1:1 nearest-neighbor matching without replacement using a logit-scale caliper;
+- assess common support, matched-sample retention, match quality, and covariate balance before estimating an effect;
+- estimate and interpret the ATT as a relapse rate ratio in the matched treated population; and
+- explain how unmatched treated patients and matching choices affect the population represented by the estimate.
+
 # 1. How matching works
 
 ![ATT propensity-score matching: 1:1 nearest-neighbor pairs are formed without replacement within a 0.1-SD logit caliper; treated patients without an eligible control remain unmatched.](figures/ps-matching-att.svg){width=100%}

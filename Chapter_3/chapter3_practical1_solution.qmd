@@ -25,6 +25,15 @@ The companion [task page](chapter3_practical1_task.qmd) contains the practical i
 
 This practical compares the baseline characteristics of patients receiving DMT1 and DMT0, fits a propensity-score model, and assesses overlap. A propensity score (PS) is the probability of receiving the treatment of interest conditional on measured baseline covariates. It describes treatment assignment; it is not the probability of a good outcome.
 
+# Learning objectives
+
+By completing this practical, you will be able to:
+
+- summarize and compare baseline characteristics by treatment group using appropriate descriptive measures;
+- use standardized mean differences to describe measured-covariate imbalance without baseline hypothesis tests;
+- estimate a propensity score using logistic regression with prespecified pretreatment covariates; and
+- inspect propensity-score overlap and explain why treatment-prediction accuracy alone does not establish a suitable adjustment model.
+
 # 1. Prepare and compare the baseline data
 
 

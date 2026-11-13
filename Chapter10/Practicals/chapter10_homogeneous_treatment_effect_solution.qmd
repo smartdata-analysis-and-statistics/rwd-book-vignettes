@@ -16,6 +16,7 @@ execute:
 ---
 
 These practicals are based on the online chapter [“Dealing with missing data”](https://smartdata-analysis-and-statistics.github.io/comparative-effectiveness/chapter_09.html), which complements the material in *Comparative Effectiveness and Personalized Medicine Research Using Real-World Data* (pp. 165–202). The book chapter is by Thomas P. A. Debray, Hanne Oberman, and Gerko Vink.
+
 ::: {.callout-note title="How to use this solution"}
 The corresponding exercises are in the [Homogeneous Treatment Effect practical](chapter10_homogeneous_treatment_effect_task.qmd). This solution follows one analysis from start to finish: define the treatment-effect question, impute incomplete covariates under a MAR working assumption, check the imputations, estimate and pool the effect, then test how the conclusion changes if missing log costs may be MNAR.
 :::

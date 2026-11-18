@@ -23,7 +23,7 @@
   </defs>
   <rect width="1180" height="650" rx="18" fill="#ffffff"/>
   <text x="590" y="48" text-anchor="middle" class="title">1:1 nearest-neighbor propensity score matching | ATT</text>
-  <text x="590" y="77" text-anchor="middle" class="sub">Matched pairs compare DMT1 patients with similar DMT0 controls</text>
+  <text x="590" y="77" text-anchor="middle" class="sub">Matched pairs compare DMF patients with similar TERI controls</text>
 
   <rect x="34" y="112" width="298" height="420" rx="16" class="panel"/>
   <rect x="365" y="112" width="485" height="420" rx="16" class="soft"/>
@@ -31,7 +31,7 @@
 
   <text x="183" y="150" text-anchor="middle" class="head">1. Estimate PS</text>
   <text x="183" y="177" text-anchor="middle" class="small">Each dot is one patient</text>
-  <text x="75" y="224" class="body">DMT1</text><text x="75" y="307" class="body">DMT0</text>
+  <text x="75" y="224" class="body">DMF</text><text x="75" y="307" class="body">TERI</text>
   <circle cx="150" cy="218" r="15" class="navy"/><circle cx="195" cy="218" r="15" class="navy"/><circle cx="240" cy="218" r="15" class="navy"/><circle cx="285" cy="218" r="15" class="navy"/>
   <circle cx="150" cy="301" r="15" class="green"/><circle cx="195" cy="301" r="15" class="green"/><circle cx="240" cy="301" r="15" class="green"/><circle cx="285" cy="301" r="15" class="green"/>
   <text x="183" y="365" text-anchor="middle" class="body">Model treatment from</text>
@@ -63,13 +63,13 @@
   <circle cx="962" cy="222" r="17" class="navy"/><circle cx="1014" cy="222" r="17" class="green"/>
   <text x="988" y="270" text-anchor="middle" class="body">Compare relapse rates</text>
   <text x="1014" y="321" text-anchor="middle" class="body">Average over matched</text>
-  <text x="1014" y="345" text-anchor="middle" class="body">DMT1 patients</text>
+  <text x="1014" y="345" text-anchor="middle" class="body">DMF patients</text>
   <rect x="910" y="388" width="208" height="72" rx="12" fill="#fff" stroke="#80c42b" stroke-width="2"/>
   <text x="1014" y="418" text-anchor="middle" class="head">ATT</text>
   <text x="1014" y="442" text-anchor="middle" class="small">matched treated target</text>
 
-  <circle cx="78" cy="585" r="12" class="navy"/><text x="100" y="591" class="body">DMT1 (treated)</text>
-  <circle cx="275" cy="585" r="12" class="green"/><text x="297" y="591" class="body">DMT0 (control)</text>
+  <circle cx="78" cy="585" r="12" class="navy"/><text x="100" y="591" class="body">DMF (treated)</text>
+  <circle cx="275" cy="585" r="12" class="green"/><text x="297" y="591" class="body">TERI (control)</text>
   <circle cx="501" cy="585" r="12" class="muted"/><text x="523" y="591" class="body">Not matched</text>
   <text x="1144" y="592" text-anchor="end" class="small">ATT = average treatment effect among treated</text>
 </svg>

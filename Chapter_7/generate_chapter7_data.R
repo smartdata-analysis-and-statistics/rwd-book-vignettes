@@ -22,17 +22,14 @@ raw_data <- generate_data(
   beta = rep(-0.2, 5)
 )
 
-chapter3_data <- data.frame(
+chapter7_data <- data.frame(
   age = raw_data$age,
   female = as.integer(raw_data$gender == "Female"),
   prevDMTefficacy = raw_data$prevDMTefficacy,
   premedicalcost = exp(raw_data$logPremedicalcost),
   numSymptoms = raw_data$numSymptoms,
   prerelapse_num = raw_data$prerelapseNum,
-  treatment = factor(
-    ifelse(raw_data$treatment == "DMF", "DMT1", "DMT0"),
-    levels = c("DMT0", "DMT1")
-  ),
+  treatment = factor(raw_data$treatment, levels = c("TERI", "DMF")),
   y = raw_data$y,
   years = raw_data$years,
   Iscore = raw_data$Iscore
@@ -40,7 +37,7 @@ chapter3_data <- data.frame(
 
 data_directory <- file.path(script_directory, "data")
 dir.create(data_directory, showWarnings = FALSE)
-output_path <- file.path(data_directory, "chapter3_ps_data.rds")
-saveRDS(chapter3_data, output_path)
+output_path <- file.path(data_directory, "chapter7_ps_data.rds")
+saveRDS(chapter7_data, output_path)
 
-message("Saved ", nrow(chapter3_data), " rows to ", output_path)
+message("Saved ", nrow(chapter7_data), " rows to ", output_path)

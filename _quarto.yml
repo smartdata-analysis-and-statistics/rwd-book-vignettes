@@ -4,7 +4,8 @@ project:
     - sdas_large.png
     - Chapter10/Practicals/data/chapter10_exploration_data.rds
     - Chapter10/Practicals/data/chapter10_homogeneous_data.rds
-    - Chapter_3/data/chapter3_ps_data.rds
+    - Chapter_7/data/chapter7_ps_data.rds
+    - Chapter_8/data/chapter8_effect_modification_data.rds
 
 execute:
   freeze: auto
@@ -19,17 +20,21 @@ website:
         text: Home
       - text: Comparative effectiveness
         menu:
-          - href: Chapter_3/index.qmd
-            text: Chapter 3 practicals — index
-          - href: Chapter_3/chapter3_practical1_task.qmd
+          - href: Chapter_7/index.qmd
+            text: Chapter 7 practicals — index
+          - href: Chapter_7/chapter7_summary.qmd
+            text: Chapter 7 summary
+          - href: Chapter_8/index.qmd
+            text: Chapter 8 practicals — index
+          - href: Chapter_7/chapter7_practical1_task.qmd
             text: Baseline and propensity scores
-          - href: Chapter_3/chapter3_practical2_task.qmd
+          - href: Chapter_7/chapter7_practical2_task.qmd
             text: Propensity-score matching
-          - href: Chapter_3/chapter3_practical3_task.qmd
+          - href: Chapter_7/chapter7_practical3_task.qmd
             text: Propensity-score stratification
-          - href: Chapter_3/chapter3_practical4_task.qmd
+          - href: Chapter_7/chapter7_practical4_task.qmd
             text: Propensity-score weighting
-          - href: Chapter_3/chapter3_practical5_task.qmd
+          - href: Chapter_7/chapter7_practical5_task.qmd
             text: Regression adjustment for the propensity score
           - href: Chapter10/Practicals/index.qmd
             text: Chapter 10 practicals — index

@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="450" viewBox="0 0 1200 450" role="img" aria-labelledby="title desc">
+  <title id="title">Propensity score analysis workflow</title>
+  <desc id="desc">Six steps: define estimand, select baseline covariates, estimate propensity scores, inspect overlap, apply and diagnose an approach, then estimate and stress-test the effect. A caution states that balance is evidence about measured variables, not proof of causal assumptions.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="6" orient="auto" markerUnits="strokeWidth"><path d="M1,1 L10,6 L1,11" fill="none" stroke="#53647a" stroke-width="1.8"/></marker>
+    <style>
+      .bg{fill:#f6f4f0}.card{fill:#fff;stroke:#d9d4ca;stroke-width:2}.num{font:700 17px system-ui,sans-serif;fill:#fff;text-anchor:middle;dominant-baseline:middle}.head{font:700 18px system-ui,sans-serif;fill:#24364b;text-anchor:middle}.copy{font:400 15px system-ui,sans-serif;fill:#586779;text-anchor:middle}.edge{stroke:#53647a;stroke-width:3;fill:none;marker-end:url(#arrow)}.warn{fill:#f7e6df;stroke:#e3b4a4;stroke-width:2}.warning{font:600 17px system-ui,sans-serif;fill:#78443a;text-anchor:middle}.small{font:400 15px system-ui,sans-serif;fill:#78443a;text-anchor:middle}
+    </style>
+  </defs>
+  <rect class="bg" width="1200" height="450" rx="22"/>
+  <g transform="translate(22,48)">
+    <rect class="card" width="166" height="180" rx="16"/>
+    <circle cx="83" cy="38" r="19" fill="#6e4b7c"/><text class="num" x="83" y="38">1</text>
+    <text class="head" x="83" y="88"><tspan x="83">Define the</tspan><tspan x="83" dy="23">estimand</tspan></text>
+    <text class="copy" x="83" y="146"><tspan x="83">ATE, ATT, ATC,</tspan><tspan x="83" dy="20">or overlap group</tspan></text>
+  </g>
+  <path class="edge" d="M193 138 L216 138"/>
+  <g transform="translate(225,48)">
+    <rect class="card" width="166" height="180" rx="16"/>
+    <circle cx="83" cy="38" r="19" fill="#6e4b7c"/><text class="num" x="83" y="38">2</text>
+    <text class="head" x="83" y="88"><tspan x="83">Select baseline</tspan><tspan x="83" dy="23">confounders</tspan></text>
+    <text class="copy" x="83" y="146"><tspan x="83">Use causal and</tspan><tspan x="83" dy="20">clinical knowledge</tspan></text>
+  </g>
+  <path class="edge" d="M396 138 L419 138"/>
+  <g transform="translate(428,48)">
+    <rect class="card" width="166" height="180" rx="16"/>
+    <circle cx="83" cy="38" r="19" fill="#6e4b7c"/><text class="num" x="83" y="38">3</text>
+    <text class="head" x="83" y="88"><tspan x="83">Estimate</tspan><tspan x="83" dy="23">propensity scores</tspan></text>
+    <text class="copy" x="83" y="146"><tspan x="83">P(treatment |</tspan><tspan x="83" dy="20">baseline X)</tspan></text>
+  </g>
+  <path class="edge" d="M599 138 L622 138"/>
+  <g transform="translate(631,48)">
+    <rect class="card" width="166" height="180" rx="16"/>
+    <circle cx="83" cy="38" r="19" fill="#6e4b7c"/><text class="num" x="83" y="38">4</text>
+    <text class="head" x="83" y="88"><tspan x="83">Inspect</tspan><tspan x="83" dy="23">overlap</tspan></text>
+    <text class="copy" x="83" y="146"><tspan x="83">Check common</tspan><tspan x="83" dy="20">support / positivity</tspan></text>
+  </g>
+  <path class="edge" d="M802 138 L825 138"/>
+  <g transform="translate(834,48)">
+    <rect class="card" width="166" height="180" rx="16"/>
+    <circle cx="83" cy="38" r="19" fill="#6e4b7c"/><text class="num" x="83" y="38">5</text>
+    <text class="head" x="83" y="88"><tspan x="83">Apply &amp; check</tspan><tspan x="83" dy="23">the design</tspan></text>
+    <text class="copy" x="83" y="146"><tspan x="83">Match, stratify,</tspan><tspan x="83" dy="20">or weight; assess balance</tspan></text>
+  </g>
+  <path class="edge" d="M1005 138 L1028 138"/>
+  <g transform="translate(1037,48)">
+    <rect class="card" width="140" height="180" rx="16"/>
+    <circle cx="70" cy="38" r="19" fill="#6e4b7c"/><text class="num" x="70" y="38">6</text>
+    <text class="head" x="70" y="88"><tspan x="70">Estimate &amp;</tspan><tspan x="70" dy="23">stress-test</tspan></text>
+    <text class="copy" x="70" y="146"><tspan x="70">Effect, uncertainty,</tspan><tspan x="70" dy="20">sensitivity</tspan></text>
+  </g>
+  <rect class="warn" x="78" y="278" width="1044" height="112" rx="16"/>
+  <text class="warning" x="600" y="318">Balance diagnostics address measured covariates only.</text>
+  <text class="small" x="600" y="349">They cannot establish no unmeasured confounding or adequate support where treatment is rare.</text>
+  <text class="small" x="600" y="375">If balance is poor, revise the score model or design and check again before estimating effects.</text>
+</svg>

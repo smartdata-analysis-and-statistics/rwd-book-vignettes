@@ -1,6 +1,6 @@
 ---
 title: "Practical 2: Propensity-score matching"
-subtitle: "Computer practical solutions: ATT"
+subtitle: "Computer practical: ATT"
 format:
   html:
     theme: cosmo
@@ -17,8 +17,8 @@ execute:
 
 This practical is based on the online chapter [“Confounding adjustment using propensity score methods”](https://smartdata-analysis-and-statistics.github.io/comparative-effectiveness/chapter_06.html), which complements the material in *Comparative Effectiveness and Personalized Medicine Research Using Real-World Data* (pp. 99–123). The book chapter is by Tammy Jiang, Gabrielle Simoneau, Changyu Shen, Fabio Pellegrini, and Carl de Moor.
 
-::: {.callout-note title="How to use this solution"}
-The companion [task page](chapter3_practical2_task.qmd) contains the prompts. In this solution, each task is followed immediately by the code that completes it and a comment explaining the result. Discussion questions and answers follow the tasks.
+::: {.callout-note title="How to use this practical"}
+Complete the tasks and discussion questions before opening the [worked solution](chapter7_practical2_solution.qmd). The figure and short method summary introduce the analysis.
 :::
 
 # Learning objectives
@@ -42,30 +42,32 @@ By the end of this practical, you should be able to:
 
 # 2. Perform and assess matching
 
+Estimate the average treatment effect among treated patients (ATT): the mean DMF-versus-TERI treatment contrast for those who received DMF.
+
 ```{r}
-#| eval: true
+#| eval: false
+install.packages(c("dplyr", "ggplot2", "MatchIt", "cobalt", "marginaleffects", "optmatch"))
 library(dplyr)
 library(ggplot2)
 library(MatchIt)
 library(cobalt)
 library(marginaleffects)
-data_file <- if (file.exists("data/chapter3_ps_data.rds")) {
-  "data/chapter3_ps_data.rds"
+data_file <- if (file.exists("data/chapter7_ps_data.rds")) {
+  "data/chapter7_ps_data.rds"
 } else {
-  "Chapter_3/data/chapter3_ps_data.rds"
+  "Chapter_7/data/chapter7_ps_data.rds"
 }
 dat <- readRDS(data_file)
-
 ps_formula <- treatment ~ age + female + prevDMTefficacy +
   premedicalcost + prerelapse_num + numSymptoms
 vars <- c("age", "female", "prevDMTefficacy", "premedicalcost",
           "prerelapse_num", "numSymptoms")
 ```
 
-Estimate the propensity score from the prespecified baseline covariates, then match each eligible DMT1 patient to one DMT0 patient. The matching settings are shown explicitly below.
+Estimate the propensity score from the prespecified baseline covariates, then match each eligible DMF patient to one TERI patient. The matching settings are shown explicitly below.
 
 ```{r}
-#| eval: true
+#| eval: false
 opt <- matchit(
   ps_formula, data = dat, method = "nearest", distance = "glm",
   link = "linear.logit", ratio = 1, replace = FALSE,
@@ -83,10 +85,10 @@ matched_dat <- match.data(opt)
 Common support asks whether treated and control patients have overlapping propensity-model distance ranges on the linear-logit scale. The plot and table below summarize the intersection of the groups' observed ranges before matching.
 
 ```{r}
-#| eval: true
+#| eval: false
 dat$logit_ps <- opt$distance
-treated_logit <- dat$logit_ps[dat$treatment == "DMT1"]
-control_logit <- dat$logit_ps[dat$treatment == "DMT0"]
+treated_logit <- dat$logit_ps[dat$treatment == "DMF"]
+control_logit <- dat$logit_ps[dat$treatment == "TERI"]
 support_lower <- max(min(treated_logit), min(control_logit))
 support_upper <- min(max(treated_logit), max(control_logit))
 dat$in_support <- dat$logit_ps >= support_lower & dat$logit_ps <= support_upper
@@ -100,9 +102,9 @@ ggplot(dat, aes(x = logit_ps, fill = treatment, colour = treatment)) +
   ) +
   geom_vline(xintercept = c(support_lower, support_upper),
              linetype = "dashed", linewidth = .6, colour = "#333333") +
-  scale_fill_manual(values = c(DMT0 = "#80c42b", DMT1 = "#26476b"),
+  scale_fill_manual(values = c(TERI = "#80c42b", DMF = "#26476b"),
                     name = "Treatment") +
-  scale_colour_manual(values = c(DMT0 = "#80c42b", DMT1 = "#26476b"),
+  scale_colour_manual(values = c(TERI = "#80c42b", DMF = "#26476b"),
                       guide = "none") +
   labs(x = "Propensity-score logit (propensity-model distance; linear-logit scale)",
        y = "Density",
@@ -129,16 +131,14 @@ support_table <- dat %>%
 support_table
 ```
 
-::: {.callout-tip title="Comment"}
-The overlaid density curves compare the pre-matching logit-distance distributions; the dots show individual patients, and the dashed lines mark the intersection of the groups' observed ranges. In this dataset, most of both groups lies between the support limits (−3.413 and 4.509), and the distributions overlap across much of that interval. The support table counts 7,541 of 7,604 treated patients (99.2%) and 2,308 of 2,396 controls (96.3%) inside the shared range. This range-based check is reassuring, but it does not show whether there are enough nearby controls for every treated patient or whether covariates are balanced after matching.
-:::
+Describe what the overlaid density curves, individual dots, and dashed support limits show in this dataset. Report the logit-distance ranges and the number and percentage within the shared range. Then compare these support counts with the retention table: explain why patients can fall within the overall shared range yet remain unmatched under 1:1 matching without replacement and a caliper. Range overlap alone does not establish sufficient local matches or covariate balance.
 
 ## Retention
 
 Retention measures how many patients in each treatment group remain matched after applying the design from section 2. Use `summary(opt)` and the table below to report matched, unmatched, and percent retained.
 
 ```{r}
-#| eval: true
+#| eval: false
 summary(opt)
 
 retention_table <- dat %>%
@@ -152,21 +152,19 @@ retention_table <- dat %>%
 retention_table
 ```
 
-::: {.callout-tip title="Comment"}
-The retention table shows how many patients remain after applying the 1:1, no-replacement design and its caliper. In this dataset, 1,996 of 7,604 treated patients (26.2%) and 1,996 of 2,396 controls (83.3%) are retained; 5,608 treated patients and 400 controls are unmatched. The matched ESS is 1,996 in each group. Thus the estimated ATT describes the matched subset of DMT1 patients and should not automatically be generalized to all treated patients.
-:::
+Report matched and unmatched counts, percent retained, and the effective sample size (ESS) from `summary(opt)`. Explain why the matched treated patients define the target population more narrowly than all DMF patients.
 
 ## Match quality
 
-Check whether each pair is within the caliper. The histogram shows the distribution of absolute treated-control logit-distance differences, expressed in standard-deviation units; the dashed line marks the 0.1-SD caliper.
+Check whether each pair is within the caliper. The first plot is a histogram of absolute within-pair logit-distance differences, expressed in standard-deviation units; the dashed line marks the 0.1-SD caliper.
 
 ```{r}
-#| eval: true
+#| eval: false
 pair_quality <- matched_dat %>%
   group_by(subclass) %>%
   summarise(
-    treated_logit = distance[treatment == "DMT1"][1],
-    control_logit = distance[treatment == "DMT0"][1],
+    treated_logit = distance[treatment == "DMF"][1],
+    control_logit = distance[treatment == "TERI"][1],
     abs_logit_difference = abs(treated_logit - control_logit),
     .groups = "drop"
   ) %>%
@@ -180,59 +178,52 @@ ggplot(pair_quality, aes(x = standardized_difference)) +
   theme_minimal()
 ```
 
-::: {.callout-tip title="Comment"}
-The histogram shows that pair distances are concentrated near the caliper boundary, with a maximum of 0.100 SD. All pairs satisfy the specified 0.1-SD caliper, although many are close to its limit.
-:::
+Comment on the histogram’s shape and maximum: are any pairs beyond the caliper, and are many pairs close to its limit?
 
-The next density plot compares the propensity-score logit distributions in the matched sample. Close overlap is expected because matching selected controls based on this distance; it is a check of score similarity, not a substitute for checking baseline covariate balance.
+The second plot compares the propensity-score logit distributions among matched treated and control patients. It shows how similar the groups are on the score used to form the matches; it does not assess balance on each baseline covariate.
 
 ```{r}
-#| eval: true
+#| eval: false
 ggplot(matched_dat, aes(x = distance, fill = treatment, colour = treatment)) +
   geom_density(alpha = .25, na.rm = TRUE) +
-  scale_fill_manual(values = c(DMT0 = "#80c42b", DMT1 = "#26476b")) +
-  scale_colour_manual(values = c(DMT0 = "#80c42b", DMT1 = "#26476b")) +
+  scale_fill_manual(values = c(TERI = "#80c42b", DMF = "#26476b")) +
+  scale_colour_manual(values = c(TERI = "#80c42b", DMF = "#26476b")) +
   labs(x = "Propensity-score logit", y = "Density",
        fill = "Treatment", colour = "Treatment") +
   theme_minimal() + theme(legend.position = "bottom")
 ```
 
-::: {.callout-tip title="Comment"}
-The matched distributions overlap closely, with treated and control patients concentrated in similar logit-distance regions. This visual check is consistent with the pair-distance histogram, but score overlap alone does not establish balance on each baseline covariate.
-:::
+Comment on how closely the matched score distributions overlap. Together, these plots assess score-distance match quality; use the next section to assess covariate balance.
 
 ## Covariate balance
 
-Covariate balance checks whether the matched treated and control groups have similar measured baseline characteristics. Here `opt` is the MatchIt object for this matching practical; `w.out` belongs to the weighting practical and is not the object to plot here. Use an absolute standardized mean difference (SMD) below 0.1 as a diagnostic threshold, not as proof that confounding has been eliminated.
+Covariate balance checks whether matched treated and control patients have similar measured baseline characteristics. In this practical the matching result is stored in `opt` (a MatchIt object); `w.out` is used for weighting in Practical 4. Use an absolute standardized mean difference (SMD) below 0.1 as a diagnostic threshold, not as proof that confounding has been eliminated.
 
-The covariate density plots compare the distributions of each measured baseline variable between treatment groups before and after matching. They can reveal distributional differences that a mean-based SMD may not show.
+The covariate density plots compare distributions of measured baseline variables between the treatment groups before and after matching. They can show distributional differences that a mean-based SMD may not capture.
 
 ```{r}
-#| eval: true
-# Black line is treated DMT1; grey line is control DMT0.
+#| eval: false
+# Black line is treated DMF; grey line is control TERI.
 plot(opt, type = "density", which.xs = vars)
 ```
 
-::: {.callout-tip title="Comment"}
-After matching, the plotted covariate distributions are generally closer between DMT1 and DMT0 than they were before matching, consistent with the SMD results. Review each panel for remaining differences; no plot can assess unmeasured confounding.
-:::
+Comment on how the plotted covariate distributions change after matching and identify any remaining differences.
 
-The balance table reports the numeric pre- and post-match SMDs. The love plot below shows their absolute values in one comparison; it omits propensity-score distance so the baseline covariates remain the focus.
+Use the balance table for numeric SMDs and the love plot for a single visual comparison of absolute SMDs before and after matching. The plot omits the propensity-score distance so the baseline covariates remain the focus.
 
 ```{r}
-#| eval: true
+#| eval: false
 bal.tab(opt, un = TRUE, thresholds = c(m = .1))
 love.plot(opt, stats = "mean.diffs", abs = TRUE,
           thresholds = c(m = .1), drop.distance = TRUE,
-          sample.names = c("Before matching", "After matching"))
+          sample.names = c("Before matching", "After matching"),
+          colors = c("#26476b", "#80c42b"))
 ```
 
-::: {.callout-tip title="Comment"}
-The table and love plot show that all included baseline covariates meet the absolute-SMD threshold in this run; age is closest to the threshold at 0.086. This supports measured-covariate balance in the matched sample, but does not establish that all confounding has been removed.
-:::
+Comment on the SMD table and love plot. Identify any covariates above the threshold. Proceed to estimate the ATT only after reviewing overlap, retention, pair distances, and covariate balance.
 
 ::: {.callout-note title="Optional: try optimal matching"}
-Nearest-neighbor matching makes each match in sequence. Optimal matching chooses all pairs together to minimize their total propensity-score distance. This example does not impose the 0.1-SD caliper. Recheck overlap and balance; do not assume optimal matching will improve them.
+Nearest-neighbor matching makes each match in sequence. Optimal matching instead chooses all pairs together to minimize their total propensity-score distance. It can be compared with the primary analysis, but it does not use the 0.1-SD caliper in this example. Recheck overlap and covariate balance; do not assume the alternative will improve them.
 
 ```{r}
 #| eval: false
@@ -243,45 +234,29 @@ optimal <- matchit(
 summary(optimal)
 bal.tab(optimal, un = TRUE, thresholds = c(m = .1))
 love.plot(optimal, stats = "mean.diffs", abs = TRUE,
-          thresholds = c(m = .1), drop.distance = TRUE)
+          thresholds = c(m = .1))
 ```
 :::
-
 
 # 4. Estimate the treatment effect
 
-**Task 1.** Report the DMT1-versus-DMT0 IRR and 95% confidence interval. Interpret the estimate in the context of relapse rates.
+Use a Poisson model for relapse counts with follow-up time as an offset. The exponentiated treatment contrast is a relapse rate ratio (IRR).
 
 ```{r}
-#| eval: true
+#| eval: false
+matched_dat <- match.data(opt)
 fit <- glm(y ~ treatment + offset(log(years)), family = poisson(),
            data = matched_dat, weights = weights)
-avg_comparisons(
-  fit, variables = "treatment", comparison = "ratioavg",
-  vcov = ~subclass,
-  newdata = subset(matched_dat, treatment == "DMT1"),
-  wts = "weights"
-)
+avg_comparisons(fit, variables = "treatment", comparison = "ratioavg",
+                vcov = ~subclass,
+                newdata = subset(matched_dat, treatment == "DMF"),
+                wts = "weights")
 ```
 
-::: {.callout-tip title="Comment and answer"}
-Report the estimate and confidence interval printed by `avg_comparisons()`. An IRR below 1 corresponds to an estimated lower relapse rate under DMT1 than DMT0 in the matched target population; an IRR above 1 corresponds to a higher rate.
-:::
+**Tasks:**
 
-**Task 2.** Explain how the matched pairs define the ATT target and why treated patients outside the caliper are excluded from the matched estimate.
-
-```{r}
-#| eval: true
-matched_dat %>%
-  group_by(treatment) %>%
-  summarise(
-    n_matched = n(), .groups = "drop"
-  )
-```
-
-::: {.callout-tip title="Comment and answer"}
-The matched analysis compares DMT1 patients with their selected DMT0 controls. Each matched pair contributes one patient from each group; DMT1 patients without a control within the caliper are excluded, so describe the target as the matched treated patients.
-:::
+1. Report the DMF-versus-TERI IRR and 95% confidence interval. Interpret the estimate in the context of relapse rates.
+2. Explain how the matched pairs define the ATT target and why treated patients outside the caliper are excluded from the matched estimate.
 
 **Questions for discussion:**
 
@@ -289,13 +264,6 @@ The matched analysis compares DMT1 patients with their selected DMT0 controls. E
 2. What does matching without replacement mean, and what trade-off does the caliper create?
 3. How does restricting the analysis to treated patients with a control inside the caliper affect the ATT target population?
 4. Why are covariate balance and overlap both relevant when judging whether the ATT comparison is credible?
-
-::: {.callout-tip title="Comments and answers"}
-1. **What does a standardized mean difference near zero after matching tell you, and what does it not tell you?** It indicates little observed difference in that measured covariate between matched groups. It does not show that unmeasured confounders are balanced or prove the causal assumptions.
-2. **What does matching without replacement mean, and what trade-off does the caliper create?** Each control is used at most once. The caliper can improve score proximity but may leave treated patients unmatched.
-3. **How does restricting the analysis to treated patients with a control inside the caliper affect the ATT target population?** The estimate pertains to matched treated patients and may not generalize to treated patients outside the region of available controls.
-4. **Why are covariate balance and overlap both relevant when judging whether the ATT comparison is credible?** Overlap indicates that treated and control patients have comparable propensity-score regions; balance checks whether measured baseline covariates are similar after matching and weighting. Neither diagnostic addresses unmeasured confounding.
-:::
 
 ::: {.callout-note title="Optional: estimate an ATE with full matching"}
 Matching methods do not all support the same estimands. In the MatchIt version used for this practical, `method = "nearest"` supports `"ATT"` and `"ATC"`, but not `"ATE"`. For an ATE, use a method that supports both groups as the target population, such as optimal full matching (`method = "full"`). Full matching creates matched sets with flexible group sizes and uses weights to target the estimand. It requires the `optmatch` package and can take longer to run. This example omits the nearest-neighbor caliper; inspect overlap and balance and report any loss of units.

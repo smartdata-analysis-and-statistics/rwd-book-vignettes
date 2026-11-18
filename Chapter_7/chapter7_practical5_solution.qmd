@@ -18,7 +18,7 @@ execute:
 This practical is based on the online chapter [“Confounding adjustment using propensity score methods”](https://smartdata-analysis-and-statistics.github.io/comparative-effectiveness/chapter_06.html), which complements the material in *Comparative Effectiveness and Personalized Medicine Research Using Real-World Data* (pp. 99–123). The book chapter is by Tammy Jiang, Gabrielle Simoneau, Changyu Shen, Fabio Pellegrini, and Carl de Moor.
 
 ::: {.callout-note title="How to use this solution"}
-The companion [task page](chapter3_practical5_task.qmd) contains the prompts. Review each task and discussion question before the comments and answers below.
+The companion [task page](chapter7_practical5_task.qmd) contains the prompts. Review each task and discussion question before the comments and answers below.
 :::
 
 # Learning objectives
@@ -34,7 +34,7 @@ By the end of this practical, you should be able to:
 
 ![Schematic of propensity-score regression adjustment: estimate the PS from pretreatment covariates, fit a Poisson outcome model using treatment and PS, predict both treatment outcomes for each treated patient, and average the rate ratios to estimate the ATT.](figures/ps-regression-adjustment-att.svg){width=100%}
 
-Estimate each patient's propensity score from pretreatment covariates, then fit an outcome model with treatment, the estimated propensity score, and an offset for follow-up time. Predict each DMT1 patient's relapse rate under both treatments and average the rate contrast over DMT1 patients to target the ATT.
+Estimate each patient's propensity score from pretreatment covariates, then fit an outcome model with treatment, the estimated propensity score, and an offset for follow-up time. Predict each DMF patient's relapse rate under both treatments and average the rate contrast over DMF patients to target the ATT.
 
 **When to use:** when the PS model provides adequate overlap and balance, and the relationship between the PS and outcome can be modeled credibly.
 
@@ -51,10 +51,10 @@ This practical uses regression adjustment for the estimated propensity score to 
 library(dplyr)
 library(ggplot2)
 library(marginaleffects)
-data_file <- if (file.exists("data/chapter3_ps_data.rds")) {
-  "data/chapter3_ps_data.rds"
+data_file <- if (file.exists("data/chapter7_ps_data.rds")) {
+  "data/chapter7_ps_data.rds"
 } else {
-  "Chapter_3/data/chapter3_ps_data.rds"
+  "Chapter_7/data/chapter7_ps_data.rds"
 }
 dat <- readRDS(data_file)
 ```
@@ -87,8 +87,8 @@ fit_ps_quad <- glm(
 
 **Questions:**
 
-1. Compare estimated PS distributions by treatment and describe regions with limited support. Report each group's score range and the number and percentage of DMT1 patients outside the observed DMT0 score range.
-2. Explain why overlap matters when predictions are standardized over DMT1 patients. Treat the range check as a rough diagnostic: patients inside the overall DMT0 range may still have few nearby controls.
+1. Compare estimated PS distributions by treatment and describe regions with limited support. Report each group's score range and the number and percentage of DMF patients outside the observed TERI score range.
+2. Explain why overlap matters when predictions are standardized over DMF patients. Treat the range check as a rough diagnostic: patients inside the overall TERI range may still have few nearby controls.
 3. State how much extrapolation the ATT appears to require and whether an explicitly defined overlap-restricted target population would be more credible.
 
 ```{r}
@@ -96,15 +96,15 @@ fit_ps_quad <- glm(
 ggplot(dat, aes(x = ps, fill = treatment)) +
   geom_histogram(position = "identity", alpha = .45, bins = 30) +
   facet_wrap(~ treatment, ncol = 1) +
-  scale_fill_manual(values = c(DMT0 = "#80c42b", DMT1 = "#26476b"),
+  scale_fill_manual(values = c(TERI = "#80c42b", DMF = "#26476b"),
                     guide = "none") +
-  labs(x = "Estimated probability of DMT1", y = "Participants") +
+  labs(x = "Estimated probability of DMF", y = "Participants") +
   theme_minimal()
 
 dat %>% group_by(treatment) %>%
   summarise(n = n(), min = min(ps), median = median(ps), max = max(ps))
-control_range <- range(dat$ps[dat$treatment == "DMT0"])
-dat %>% filter(treatment == "DMT1") %>%
+control_range <- range(dat$ps[dat$treatment == "TERI"])
+dat %>% filter(treatment == "DMF") %>%
   summarise(
     n_treated = n(),
     n_outside_control_range = sum(ps < control_range[1] | ps > control_range[2]),
@@ -113,14 +113,14 @@ dat %>% filter(treatment == "DMT1") %>%
 ```
 
 ::: {.callout-tip title="Comments and answers"}
-1. The estimated PS ranges are about 0.000–0.989 for DMT0 and 0.032–0.995 for DMT1. The treated distribution is shifted toward high scores, while controls are more concentrated at lower scores.
-2. 63 of 7,604 DMT1 patients (0.83%) fall outside the overall DMT0 range. That indicates few treated patients outside the control endpoints, but it does not prove good local overlap. The treated group is concentrated at high scores, so the histogram should be checked for sparse nearby controls there.
+1. The estimated PS ranges are about 0.000–0.989 for TERI and 0.032–0.995 for DMF. The treated distribution is shifted toward high scores, while controls are more concentrated at lower scores.
+2. 63 of 7,604 DMF patients (0.83%) fall outside the overall TERI range. That indicates few treated patients outside the control endpoints, but it does not prove good local overlap. The treated group is concentrated at high scores, so the histogram should be checked for sparse nearby controls there.
 3. An overlap-restricted analysis would change the target from all treated patients to the retained treated subset. State that altered target explicitly if restricting; do not infer comparability for every treated patient from the low outside-range percentage.
 :::
 
 ## 3.2 Outcome-model fit and specification
 
-The outcome is a count, so the Section 2 outcome model uses Poisson regression with `offset(log(years))` to account for follow-up time. Evaluate its fit and specification here. The model follows [Section 3.7 of the comparative-effectiveness chapter](https://smartdata-analysis-and-statistics.github.io/comparative-effectiveness/chapter_06.html#propensity-score-weighting), which targets the ATE by interpreting the treatment coefficient; standardizing predictions over DMT1 patients here targets the ATT. The summary reports coefficient estimates and residual deviance; the residual-versus-PS plot checks for patterns that may indicate a linear PS term is inadequate.
+The outcome is a count, so the Section 2 outcome model uses Poisson regression with `offset(log(years))` to account for follow-up time. Evaluate its fit and specification here. The model follows [Section 3.7 of the comparative-effectiveness chapter](https://smartdata-analysis-and-statistics.github.io/comparative-effectiveness/chapter_06.html#propensity-score-weighting), which targets the ATE by interpreting the treatment coefficient; standardizing predictions over DMF patients here targets the ATT. The summary reports coefficient estimates and residual deviance; the residual-versus-PS plot checks for patterns that may indicate a linear PS term is inadequate.
 
 ```{r}
 #| eval: true
@@ -186,51 +186,51 @@ AIC(fit_ps, fit_ps_quad)
 
 # 4. Estimate the ATT
 
-Use counterfactual predictions under both treatments for each DMT1 patient. Averaging over the treated patients targets the ATT. The exponentiated marginal contrast is a relapse rate ratio (IRR).
+Use counterfactual predictions under both treatments for each DMF patient. Averaging over the treated patients targets the ATT. The exponentiated marginal contrast is a relapse rate ratio (IRR).
 
 **Tasks:**
 
 1. Explain why the covariates used to estimate the PS must be measured before treatment and why the outcome model includes `offset(log(years))`.
-2. Report the standardized DMT1-versus-DMT0 marginal relapse rate ratio and 95% confidence interval.
-3. Explain how averaging counterfactual predictions over DMT1 patients targets the ATT. In this model, does the exponentiated treatment coefficient equal the standardized rate ratio? Explain what model feature makes them equal here and when they could differ.
+2. Report the standardized DMF-versus-TERI marginal relapse rate ratio and 95% confidence interval.
+3. Explain how averaging counterfactual predictions over DMF patients targets the ATT. In this model, does the exponentiated treatment coefficient equal the standardized rate ratio? Explain what model feature makes them equal here and when they could differ.
 
 ```{r}
 #| eval: true
 att_ps <- avg_comparisons(
   fit_ps, variables = "treatment", comparison = "ratioavg",
-  newdata = subset(dat, treatment == "DMT1"), vcov = "HC3"
+  newdata = subset(dat, treatment == "DMF"), vcov = "HC3"
 )
 att_ps
 avg_comparisons(fit_ps_quad, variables = "treatment", comparison = "ratioavg",
-                newdata = subset(dat, treatment == "DMT1"), vcov = "HC3")
+                newdata = subset(dat, treatment == "DMF"), vcov = "HC3")
 ```
 
 ::: {.callout-tip title="Comments and answers"}
 1. The PS uses the measured pretreatment covariates `age`, `female`, prior DMT efficacy, medical costs, prior relapses, and symptom count. These must precede treatment so they can serve as baseline confounders. The `offset(log(years))` accounts for each patient's follow-up time and makes the Poisson mean a relapse rate rather than a count over unequal observation periods.
-2. Standardizing over DMT1 patients gives an estimated relapse rate ratio of **0.795 (95% CI 0.715–0.875)**. In this dataset, the model estimates about a 20.5% lower relapse rate under DMT1 than the modeled counterfactual DMT0 rate for the treated cohort; the interval corresponds to reductions of about 12.5%–28.5%. This interpretation remains conditional on adequate confounding control and model validity.
-3. Both counterfactual rates are predicted for each of the 7,604 DMT1 patients and summarized over that treated cohort, so the target is the ATT. Here, the exponentiated treatment coefficient and standardized rate ratio both round to 0.795 because the Poisson model has a treatment main effect without treatment-by-PS interaction: it imposes a common rate ratio at every PS value. With treatment interactions or another specification that makes the rate ratio vary across patients, the standardized marginal ATT need not equal the exponentiated coefficient.
+2. Standardizing over DMF patients gives an estimated relapse rate ratio of **0.795 (95% CI 0.715–0.875)**. In this dataset, the model estimates about a 20.5% lower relapse rate under DMF than the modeled counterfactual TERI rate for the treated cohort; the interval corresponds to reductions of about 12.5%–28.5%. This interpretation remains conditional on adequate confounding control and model validity.
+3. Both counterfactual rates are predicted for each of the 7,604 DMF patients and summarized over that treated cohort, so the target is the ATT. Here, the exponentiated treatment coefficient and standardized rate ratio both round to 0.795 because the Poisson model has a treatment main effect without treatment-by-PS interaction: it imposes a common rate ratio at every PS value. With treatment interactions or another specification that makes the rate ratio vary across patients, the standardized marginal ATT need not equal the exponentiated coefficient.
 :::
 
 ::: {.callout-note title="Optional: change the target to the ATE"}
-To target the ATE instead, change the rows used for standardization from DMT1 patients to the full cohort:
+To target the ATE instead, change the rows used for standardization from DMF patients to the full cohort:
 
 ```{r}
 #| eval: true
 # ATE support check: count observations in either treatment group
 # outside the other group's observed PS range.
-control_range <- range(dat$ps[dat$treatment == "DMT0"])
-treated_range <- range(dat$ps[dat$treatment == "DMT1"])
+control_range <- range(dat$ps[dat$treatment == "TERI"])
+treated_range <- range(dat$ps[dat$treatment == "DMF"])
 ps_support_ate <- data.frame(
-  treatment = c("DMT0", "DMT1"),
+  treatment = c("TERI", "DMF"),
   n_outside_other_range = c(
-    sum(dat$ps[dat$treatment == "DMT0"] < treated_range[1] |
-          dat$ps[dat$treatment == "DMT0"] > treated_range[2]),
-    sum(dat$ps[dat$treatment == "DMT1"] < control_range[1] |
-          dat$ps[dat$treatment == "DMT1"] > control_range[2])
+    sum(dat$ps[dat$treatment == "TERI"] < treated_range[1] |
+          dat$ps[dat$treatment == "TERI"] > treated_range[2]),
+    sum(dat$ps[dat$treatment == "DMF"] < control_range[1] |
+          dat$ps[dat$treatment == "DMF"] > control_range[2])
   )
 ) %>%
   dplyr::mutate(percent = 100 * n_outside_other_range /
-                  c(sum(dat$treatment == "DMT0"), sum(dat$treatment == "DMT1")))
+                  c(sum(dat$treatment == "TERI"), sum(dat$treatment == "DMF")))
 ps_support_ate
 
 ate <- avg_comparisons(
@@ -240,7 +240,7 @@ ate <- avg_comparisons(
 ate
 ```
 
-The specific change is `newdata = dat` instead of `newdata = subset(dat, treatment == "DMT1")`. The former averages the counterfactual outcomes over everyone (ATE); the latter averages over those treated (ATT). For the ATE, reassess support across the full cohort, including whether both treatment groups are represented across the covariate profiles; the ATT-focused check of treated patients outside the control score range is not sufficient by itself.
+The specific change is `newdata = dat` instead of `newdata = subset(dat, treatment == "DMF")`. The former averages the counterfactual outcomes over everyone (ATE); the latter averages over those treated (ATT). For the ATE, reassess support across the full cohort, including whether both treatment groups are represented across the covariate profiles; the ATT-focused check of treated patients outside the control score range is not sufficient by itself.
 :::
 
 # 5. Compare ATT estimates across methods
@@ -254,16 +254,16 @@ comparison_table <- dplyr::bind_rows(
     method = c("2. Propensity-score matching",
                "3. Propensity-score stratification",
                "4. Propensity-score weighting"),
-    target = c("Matched subset of DMT1 patients",
-               "DMT1 patients, pooled by treated stratum shares",
-               "DMT1 target; controls weighted by treatment odds"),
+    target = c("Matched subset of DMF patients",
+               "DMF patients, pooled by treated stratum shares",
+               "DMF target; controls weighted by treatment odds"),
     estimate = c(0.772, 0.770, 0.721),
     conf_low = c(0.674, 0.699, 0.635),
     conf_high = c(0.869, 0.892, 0.817)
   ),
   att_ps %>% dplyr::transmute(
     method = "5. PS regression adjustment",
-    target = "DMT1 patients; predictions standardized over treated",
+    target = "DMF patients; predictions standardized over treated",
     estimate, conf_low = conf.low, conf_high = conf.high
   )
 ) %>%
@@ -282,8 +282,8 @@ knitr::kable(comparison_table)
 4. Summarize the feasibility and diagnostic criteria in the table. Which criteria are shared across the practicals, and which are specific to each method?
 
 ::: {.callout-tip title="Comments and answers"}
-1. The table reports these primary estimates and targets: matching, **0.772 (95% CI 0.674–0.869)**, matched treated subset; stratification, **0.770 (0.699–0.892)**, DMT1 patients pooled by treated stratum shares; weighting, **0.721 (0.635–0.817)**, treated target represented with control treatment-odds weights; PS regression adjustment, **0.795 (0.715–0.875)**, DMT1 patients standardized by counterfactual predictions.
-2. All estimates favor DMT1 and their confidence intervals overlap, so point-estimate differences alone do not demonstrate meaningful disagreement. Matching compares selected close-score pairs and retains only 1,996 of 7,604 treated patients; stratification compares within score groups then averages stratum rate ratios; weighting reweights controls to represent the treated distribution; PS regression adjustment models the outcome using treatment and PS, then standardizes predictions over treated patients. These use different comparison sets and summaries and have different sensitivity to finite-sample balance, weak support, extreme weights, and model form. The pooled stratum rate-ratio summary need not equal a marginal standardized rate ratio. Austin (2011) compares these four methods and discusses balance diagnostics; see the References.
+1. The table reports these primary estimates and targets: matching, **0.772 (95% CI 0.674–0.869)**, matched treated subset; stratification, **0.770 (0.699–0.892)**, DMF patients pooled by treated stratum shares; weighting, **0.721 (0.635–0.817)**, treated target represented with control treatment-odds weights; PS regression adjustment, **0.795 (0.715–0.875)**, DMF patients standardized by counterfactual predictions.
+2. All estimates favor DMF and their confidence intervals overlap, so point-estimate differences alone do not demonstrate meaningful disagreement. Matching compares selected close-score pairs and retains only 1,996 of 7,604 treated patients; stratification compares within score groups then averages stratum rate ratios; weighting reweights controls to represent the treated distribution; PS regression adjustment models the outcome using treatment and PS, then standardizes predictions over treated patients. These use different comparison sets and summaries and have different sensitivity to finite-sample balance, weak support, extreme weights, and model form. The pooled stratum rate-ratio summary need not equal a marginal standardized rate ratio. Austin (2011) compares these four methods and discusses balance diagnostics; see the References.
 3. Matching is useful when close comparisons are important and the matched treated subset is an acceptable target; its caliper and retained sample should be examined. Stratification is useful for transparent within-score comparisons if strata retain adequate overlap and balance; coarse strata can leave residual imbalance. Weighting is useful for retaining the treated target, provided control weights and effective sample size are acceptable. Regression adjustment is useful when a compact PS-based outcome model is credible; inspect overlap, residuals, influence, and PS functional form. For this dataset, no method is a clear winner on point estimates alone: matching drops most treated patients, while the other methods retain the treated target but still need credible overlap and method-specific balance/weight/model diagnostics. The PS-adjusted ATT is stable to the quadratic sensitivity model, but its residual and local-support findings warrant caution. Prefer the method that best preserves the intended target while passing its diagnostics; none can establish no unmeasured confounding.
 4. Shared across the practicals are defining the estimand and target population, checking whether the PS provides support for the target comparison, assessing measured baseline covariates, and reporting uncertainty. The diagnostics used to assess these ideas differ by method: matching checks matched-patient retention and pair distances; stratification checks treatment counts and balance within each stratum; weighting checks weight concentration, ESS, and weighted balance; PS regression adjustment checks outcome-model fit and PS form, influential observations, and extrapolation. In this dataset the stratification diagnostics show residual within-stratum imbalance, while weighting achieves small measured SMDs but has reduced control ESS; PS regression adjustment has a stable sensitivity estimate but still requires scrutiny of its residual and local-support findings.
 :::

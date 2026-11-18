@@ -18,12 +18,12 @@ execute:
 This practical is based on the online chapter [“Confounding adjustment using propensity score methods”](https://smartdata-analysis-and-statistics.github.io/comparative-effectiveness/chapter_06.html), which complements the material in *Comparative Effectiveness and Personalized Medicine Research Using Real-World Data* (pp. 99–123). The book chapter is by Tammy Jiang, Gabrielle Simoneau, Changyu Shen, Fabio Pellegrini, and Carl de Moor.
 
 ::: {.callout-note title="How to use this practical"}
-Complete the tasks and discuss the questions before opening the [worked solution](chapter3_practical1_solution.qmd). All five practicals use the same simulated cohort and treatment comparison.
+Complete the tasks and discuss the questions before opening the [worked solution](chapter7_practical1_solution.qmd). All five practicals use the same simulated cohort and treatment comparison.
 :::
 
 # Introduction
 
-This first practical compares the baseline characteristics of patients receiving DMT1 and DMT0, fits a propensity-score model, and assesses overlap. A propensity score (PS) is the probability of receiving the treatment of interest conditional on measured baseline covariates. It describes treatment assignment; it is not the probability of a good outcome.
+This first practical compares the baseline characteristics of patients receiving DMF and TERI, fits a propensity-score model, and assesses overlap. A propensity score (PS) is the probability of receiving the treatment of interest conditional on measured baseline covariates. It describes treatment assignment; it is not the probability of a good outcome.
 
 These practicals use the `generate_data()` simulator supplied for this work, with the same multiple-sclerosis covariates, treatment, relapse-count outcome, follow-up time, and `Iscore` structure shown in the reference chapter. The simulator documentation says treatment is randomized, but its implementation assigns treatment using a logistic model of baseline covariates. That implementation is observational, which makes it suitable for teaching propensity-score adjustment. The generated cohort is saved once as an RDS file and reused in every practical.
 
@@ -45,10 +45,10 @@ install.packages(c("dplyr", "ggplot2", "tableone", "cobalt", "MatchIt", "margina
 library(dplyr)
 library(ggplot2)
 library(cobalt)
-data_file <- if (file.exists("data/chapter3_ps_data.rds")) {
-  "data/chapter3_ps_data.rds"
+data_file <- if (file.exists("data/chapter7_ps_data.rds")) {
+  "data/chapter7_ps_data.rds"
 } else {
-  "Chapter_3/data/chapter3_ps_data.rds"
+  "Chapter_7/data/chapter7_ps_data.rds"
 }
 dat <- readRDS(data_file)
 ps_formula <- treatment ~ age + female + prevDMTefficacy +
@@ -68,7 +68,7 @@ table(dat$treatment)
 colSums(is.na(dat))
 ```
 
-2. Create a baseline characteristics table comparing DMT1 and DMT0, similar to the table in the reference chapter. Include all six baseline covariates in the PS model, report categorical variables as n (%) and continuous variables as mean (SD), and show the sample size in each treatment group. Do not add baseline hypothesis tests.
+2. Create a baseline characteristics table comparing DMF and TERI, similar to the table in the reference chapter. Include all six baseline covariates in the PS model, report categorical variables as n (%) and continuous variables as mean (SD), and show the sample size in each treatment group. Do not add baseline hypothesis tests.
 ```{r}
 #| eval: false
 baseline_vars <- c("age", "female", "prevDMTefficacy",
@@ -110,7 +110,7 @@ summary(ps_fit)
 ggplot(dat, aes(x = ps, fill = treatment)) +
   geom_histogram(position = "identity", alpha = .45, bins = 30) +
   facet_wrap(~ treatment, ncol = 1) +
-  scale_fill_manual(values = c(DMT0 = "#80c42b", DMT1 = "#26476b"),
+  scale_fill_manual(values = c(TERI = "#80c42b", DMF = "#26476b"),
                     guide = "none") +
   labs(x = "Probability of Treatment", y = "Count",
        title = "Propensity Score Distribution by Treatment Group") +

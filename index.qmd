@@ -14,21 +14,34 @@ format:
 
 # Welcome
 
-This site brings together practicals on comparative effectiveness with real-world data. Chapter 3 focuses on confounding adjustment with propensity scores; Chapter 10 focuses on missing-data exploration and multiple imputation. Each topic includes learner tasks and worked solutions.
+This site brings together practicals on comparative effectiveness with real-world data. Chapter 7 focuses on average treatment effects and propensity-score adjustment; Chapter 8 focuses on effect modification; Chapter 10 focuses on missing-data exploration and multiple imputation.
 
-Each practical has a task page to work through and a separate worked solution.
+The practical collections include learner task pages; worked solutions are linked where available.
 
-## Chapter 3: Confounding adjustment using propensity scores
+## Chapter 7: Confounding adjustment using propensity scores
 
 Work through the practicals in sequence. They use a shared simulated cohort to estimate treatment effects using different propensity-score methods.
 
 | Practical | Focus | Task | Worked solution |
 |---|---|---|---|
-| Baseline comparison and propensity-score estimation | Inspect the cohort, estimate propensity scores, and assess overlap and balance. | [Open the task](Chapter_3/chapter3_practical1_task.html) | [Open the solution](Chapter_3/chapter3_practical1_solution.html) |
-| Propensity-score matching | Match participants and estimate the ATT. | [Open the task](Chapter_3/chapter3_practical2_task.html) | [Open the solution](Chapter_3/chapter3_practical2_solution.html) |
-| Propensity-score stratification | Estimate treatment effects within propensity-score strata. | [Open the task](Chapter_3/chapter3_practical3_task.html) | [Open the solution](Chapter_3/chapter3_practical3_solution.html) |
-| Propensity-score weighting | Estimate treatment effects with propensity-score weights. | [Open the task](Chapter_3/chapter3_practical4_task.html) | [Open the solution](Chapter_3/chapter3_practical4_solution.html) |
-| Regression adjustment for the propensity score | Adjust the outcome model for the estimated propensity score. | [Open the task](Chapter_3/chapter3_practical5_task.html) | [Open the solution](Chapter_3/chapter3_practical5_solution.html) |
+| Baseline comparison and propensity-score estimation | Inspect the cohort, estimate propensity scores, and assess overlap and balance. | [Open the task](Chapter_7/chapter7_practical1_task.html) | [Open the solution](Chapter_7/chapter7_practical1_solution.html) |
+| Propensity-score matching | Match participants and estimate the ATT. | [Open the task](Chapter_7/chapter7_practical2_task.html) | [Open the solution](Chapter_7/chapter7_practical2_solution.html) |
+| Propensity-score stratification | Estimate treatment effects within propensity-score strata. | [Open the task](Chapter_7/chapter7_practical3_task.html) | [Open the solution](Chapter_7/chapter7_practical3_solution.html) |
+| Propensity-score weighting | Estimate treatment effects with propensity-score weights. | [Open the task](Chapter_7/chapter7_practical4_task.html) | [Open the solution](Chapter_7/chapter7_practical4_solution.html) |
+| Regression adjustment for the propensity score | Adjust the outcome model for the estimated propensity score. | [Open the task](Chapter_7/chapter7_practical5_task.html) | [Open the solution](Chapter_7/chapter7_practical5_solution.html) |
+
+## Chapter 8: Effect modification in non-randomized studies
+
+These six practicals use a companion multiple-sclerosis cohort to compare subgroup-specific treatment effects. The baseline data-generating process follows Chapter 3, while the treatment effect varies across five baseline Iscore groups so the methods can illustrate heterogeneity.
+
+| Practical | Focus | Task |
+|---|---|---|
+| Introduction and exploration | Describe subgroup sizes, baseline balance, support, and crude outcome patterns. | [Open the practical](Chapter_8/chapter8_practical1_task.html) |
+| Covariate adjustment | Estimate subgroup-specific effects with treatment-by-Iscore outcome regression. | [Open the practical](Chapter_8/chapter8_practical2_task.html) |
+| Propensity-score matching | Match within Iscore groups and assess retention and balance. | [Open the practical](Chapter_8/chapter8_practical3_task.html) |
+| Propensity-score weighting | Estimate subgroup-specific ATT weights and inspect ESS and balance. | [Open the practical](Chapter_8/chapter8_practical4_task.html) |
+| Covariate adjustment for the propensity score | Compare continuous and categorical score adjustment. | [Open the practical](Chapter_8/chapter8_practical5_task.html) |
+| Propensity-score stratification | Estimate treatment effects within score strata. | [Open the practical](Chapter_8/chapter8_practical6_task.html) |
 
 ## Chapter 10: Missing data
 

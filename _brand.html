@@ -242,12 +242,12 @@
       if (!logo || !logoImage || !page || !sidebar || !main) return;
 
       const isNestedPractical = /\/Chapter10\/Practicals\//.test(window.location.pathname);
-      const isChapter3Practical = /\/Chapter_3\//.test(window.location.pathname);
+      const isChapter7Practical = /\/Chapter_7\//.test(window.location.pathname);
       // Chapter 3 pages are one folder below the site root; Chapter 10
       // practicals are two folders below it. Keep the root homepage path intact.
       logoImage.src = isNestedPractical
         ? '../../sdas_large.png'
-        : isChapter3Practical
+        : isChapter7Practical
           ? '../sdas_large.png'
           : 'sdas_large.png';
 

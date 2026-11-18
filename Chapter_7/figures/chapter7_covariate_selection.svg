@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="390" viewBox="0 0 1200 390" role="img" aria-labelledby="title desc">
+  <title id="title">Choose covariates with a causal diagram</title>
+  <desc id="desc">The left panel shows baseline confounder C causing treatment T and outcome Y. The right panel shows treatment T causing mediator M which then affects outcome Y.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="6" orient="auto" markerUnits="strokeWidth"><path d="M1,1 L10,6 L1,11" fill="none" stroke="#42536b" stroke-width="1.8"/></marker>
+    <style>
+      .bg{fill:#f6f4f0}.panel{fill:#fff;stroke:#ded9d0;stroke-width:2}.heading{font:700 22px system-ui,sans-serif;fill:#24364b}.sub{font:400 17px system-ui,sans-serif;fill:#586779}.node{stroke-width:2}.label{font:700 20px system-ui,sans-serif;fill:#21334a;text-anchor:middle;dominant-baseline:middle}.cap{font:600 17px system-ui,sans-serif;fill:#24364b}.edge{stroke:#42536b;stroke-width:3;fill:none;marker-end:url(#arrow)}.note{font:600 16px system-ui,sans-serif;fill:#4d5e70}
+    </style>
+  </defs>
+  <rect class="bg" width="1200" height="390" rx="22"/>
+  <rect class="panel" x="24" y="24" width="560" height="342" rx="18"/>
+  <rect class="panel" x="616" y="24" width="560" height="342" rx="18"/>
+  <text class="heading" x="52" y="66">A. Baseline confounding</text>
+  <text class="sub" x="52" y="94">A common cause can create a misleading treatment–outcome link.</text>
+  <path class="edge" d="M180 205 C242 205 260 150 324 150"/>
+  <path class="edge" d="M164 230 C245 277 358 310 464 276"/>
+  <path class="edge" d="M397 150 L465 205"/>
+  <circle class="node" cx="135" cy="205" r="39" fill="#f3d18e" stroke="#c58b27"/>
+  <circle class="node" cx="360" cy="150" r="39" fill="#b8d6e8" stroke="#5787a6"/>
+  <circle class="node" cx="500" cy="260" r="39" fill="#c9dfb7" stroke="#6b9256"/>
+  <text class="label" x="135" y="205">C</text><text class="label" x="360" y="150">T</text><text class="label" x="500" y="260">Y</text>
+  <text class="note" x="52" y="351">Adjust for relevant measured common causes that precede treatment.</text>
+  <text class="heading" x="644" y="66">B. Post-treatment mediation</text>
+  <text class="sub" x="644" y="94">Conditioning on a mediator can remove part of the effect.</text>
+  <path class="edge" d="M760 205 L866 205"/>
+  <path class="edge" d="M944 205 L1048 205"/>
+  <circle class="node" cx="720" cy="205" r="39" fill="#b8d6e8" stroke="#5787a6"/>
+  <circle class="node" cx="906" cy="205" r="39" fill="#f3d18e" stroke="#c58b27"/>
+  <circle class="node" cx="1090" cy="205" r="39" fill="#c9dfb7" stroke="#6b9256"/>
+  <text class="label" x="720" y="205">T</text><text class="label" x="906" y="205">M</text><text class="label" x="1090" y="205">Y</text>
+  <text class="note" x="644" y="328">Do not adjust for a mediator when estimating the total treatment effect.</text>
+</svg>

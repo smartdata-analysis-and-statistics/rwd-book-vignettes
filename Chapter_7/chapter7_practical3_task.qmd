@@ -18,7 +18,7 @@ execute:
 This practical is based on the online chapter [“Confounding adjustment using propensity score methods”](https://smartdata-analysis-and-statistics.github.io/comparative-effectiveness/chapter_06.html), which complements the material in *Comparative Effectiveness and Personalized Medicine Research Using Real-World Data* (pp. 99–123). The book chapter is by Tammy Jiang, Gabrielle Simoneau, Changyu Shen, Fabio Pellegrini, and Carl de Moor.
 
 ::: {.callout-note title="How to use this practical"}
-Complete the tasks and discussion questions before opening the [worked solution](chapter3_practical3_solution.qmd). The figure and short method summary introduce the analysis.
+Complete the tasks and discussion questions before opening the [worked solution](chapter7_practical3_solution.qmd). The figure and short method summary introduce the analysis.
 :::
 
 # Learning objectives
@@ -32,7 +32,7 @@ By the end of this practical, you should be able to:
 
 # 1. How stratification works
 
-![ATT propensity score stratification: patients are divided into score strata, DMT1 and DMT0 are compared within each stratum, and stratum estimates are pooled using the treated-group distribution.](figures/ps-stratification-att.svg){width=100%}
+![ATT propensity score stratification: patients are divided into score strata, DMF and TERI are compared within each stratum, and stratum estimates are pooled using the treated-group distribution.](figures/ps-stratification-att.svg){width=100%}
 
 **When to use:** when a simple, transparent adjustment using a manageable number of score bands is useful and both treatments are represented in each band.
 
@@ -50,10 +50,10 @@ library(dplyr)
 library(tableone)
 library(ggplot2)
 library(marginaleffects)
-data_file <- if (file.exists("data/chapter3_ps_data.rds")) {
-  "data/chapter3_ps_data.rds"
+data_file <- if (file.exists("data/chapter7_ps_data.rds")) {
+  "data/chapter7_ps_data.rds"
 } else {
-  "Chapter_3/data/chapter3_ps_data.rds"
+  "Chapter_7/data/chapter7_ps_data.rds"
 }
 dat <- readRDS(data_file)
 ps_formula <- treatment ~ age + female + prevDMTefficacy +
@@ -80,13 +80,13 @@ Start by checking how many participants receiving each treatment fall in each qu
 #| eval: false
 counts_by_stratum <- as.data.frame.matrix(with(dat, table(stratum, treatment)))
 counts_by_stratum$stratum <- rownames(counts_by_stratum)
-counts_by_stratum <- counts_by_stratum[, c("stratum", "DMT0", "DMT1")]
+counts_by_stratum <- counts_by_stratum[, c("stratum", "TERI", "DMF")]
 knitr::kable(counts_by_stratum, row.names = FALSE)
 ```
 
 ## Within-stratum balance
 
-Within each propensity-score stratum, compare the estimated propensity score and all modeled baseline covariates between DMT1 and DMT0. The table reports means and standard deviations for continuous variables, proportions for categorical variables, and standardized mean differences (SMDs). An absolute SMD below 0.1 is a common diagnostic guide, not proof that confounding has been removed. Also inspect the score distributions within strata; similar means alone can conceal differences in spread or shape.
+Within each propensity-score stratum, compare the estimated propensity score and all modeled baseline covariates between DMF and TERI. The table reports means and standard deviations for continuous variables, proportions for categorical variables, and standardized mean differences (SMDs). An absolute SMD below 0.1 is a common diagnostic guide, not proof that confounding has been removed. Also inspect the score distributions within strata; similar means alone can conceal differences in spread or shape.
 
 **Tasks:**
 
@@ -110,8 +110,8 @@ balance_by_stratum <- lapply(sort(unique(dat$stratum)), function(s) {
   data.frame(
     stratum = s,
     characteristic = rownames(tab_print),
-    DMT0 = tab_print[, "DMT0"],
-    DMT1 = tab_print[, "DMT1"],
+    TERI = tab_print[, "TERI"],
+    DMF = tab_print[, "DMF"],
     SMD = tab_print[, "SMD"],
     row.names = NULL,
     check.names = FALSE
@@ -121,8 +121,8 @@ knitr::kable(do.call(rbind, balance_by_stratum), row.names = FALSE)
 ggplot(dat, aes(x = ps, color = treatment, fill = treatment)) +
   geom_density(alpha = 0.15) +
   facet_wrap(~ stratum, ncol = 1) +
-  scale_fill_manual(values = c(DMT0 = "#80c42b", DMT1 = "#26476b")) +
-  scale_colour_manual(values = c(DMT0 = "#80c42b", DMT1 = "#26476b")) +
+  scale_fill_manual(values = c(TERI = "#80c42b", DMF = "#26476b")) +
+  scale_colour_manual(values = c(TERI = "#80c42b", DMF = "#26476b")) +
   labs(x = "Estimated propensity score", y = "Density", color = "Treatment",
        fill = "Treatment") +
   theme_minimal()
@@ -139,11 +139,11 @@ Combine treatment counts, within-stratum covariate summaries, propensity-score b
 
 # 4. Estimate and pool the treatment effects
 
-Within each stratum, estimate a DMT1/DMT0 annualized relapse rate ratio (ARR) using a Poisson model with `offset(log(years))`, and calculate a 95% confidence interval. Weight each stratum-specific ARR by that stratum's share of all treated participants. In this practical, the pooled ATT summary is the treated-share-weighted mean of the stratum-specific ARRs. Use a percentile bootstrap to estimate uncertainty, repeating propensity-score estimation, quintile formation, stratum-specific outcome models, and pooling in every resample.
+Within each stratum, estimate a DMF/TERI annualized relapse rate ratio (ARR) using a Poisson model with `offset(log(years))`, and calculate a 95% confidence interval. Weight each stratum-specific ARR by that stratum's share of all treated participants. In this practical, the pooled ATT summary is the treated-share-weighted mean of the stratum-specific ARRs. Use a percentile bootstrap to estimate uncertainty, repeating propensity-score estimation, quintile formation, stratum-specific outcome models, and pooling in every resample.
 
 **Tasks:**
 
-1. Fit a Poisson outcome model separately within each stratum and report the DMT1/DMT0 ARR and its 95% confidence interval.
+1. Fit a Poisson outcome model separately within each stratum and report the DMF/TERI ARR and its 95% confidence interval.
 2. Calculate each stratum's treated-share weight and weighted ARR contribution, then sum the contributions to obtain the pooled ATT summary.
 3. Bootstrap the pooled estimate and report its percentile 95% confidence interval. Explain why the bootstrap repeats the full propensity-score and stratification procedure.
 
@@ -155,19 +155,19 @@ stratum_effects <- do.call(rbind, lapply(strata, function(h) {
   d <- dat[dat$stratum == h, ]
   fit <- glm(y ~ treatment + offset(log(years)),
              family = poisson(link = "log"), data = d)
-  beta <- coef(fit)["treatmentDMT1"]
-  se <- sqrt(vcov(fit)["treatmentDMT1", "treatmentDMT1"])
+  beta <- coef(fit)["treatmentDMF"]
+  se <- sqrt(vcov(fit)["treatmentDMF", "treatmentDMF"])
   data.frame(
     stratum = h,
-    n_DMT0 = sum(d$treatment == "DMT0"),
-    n_DMT1 = sum(d$treatment == "DMT1"),
+    n_TERI = sum(d$treatment == "TERI"),
+    n_DMF = sum(d$treatment == "DMF"),
     ARR = unname(exp(beta)),
     ci_lower = unname(exp(beta - 1.96 * se)),
     ci_upper = unname(exp(beta + 1.96 * se))
   )
 }))
-stratum_effects$att_weight <- stratum_effects$n_DMT1 /
-  sum(stratum_effects$n_DMT1)
+stratum_effects$att_weight <- stratum_effects$n_DMF /
+  sum(stratum_effects$n_DMF)
 stratum_effects$weighted_ARR <- stratum_effects$att_weight *
   stratum_effects$ARR
 knitr::kable(stratum_effects, digits = 3)
@@ -188,13 +188,13 @@ stratified_att <- function(data, indices) {
     dh <- d[d$stratum == h, ]
     fit <- try(glm(y ~ treatment + offset(log(years)),
                    family = poisson(link = "log"), data = dh), silent = TRUE)
-    if (inherits(fit, "try-error")) return(c(n_DMT1 = NA_real_, ARR = NA_real_))
-    beta <- coef(fit)["treatmentDMT1"]
-    c(n_DMT1 = sum(dh$treatment == "DMT1"), ARR = unname(exp(beta)))
+    if (inherits(fit, "try-error")) return(c(n_DMF = NA_real_, ARR = NA_real_))
+    beta <- coef(fit)["treatmentDMF"]
+    c(n_DMF = sum(dh$treatment == "DMF"), ARR = unname(exp(beta)))
   })
   effects_b <- do.call(rbind, effects_b)
   if (any(!is.finite(effects_b))) return(NA_real_)
-  weights_b <- effects_b[, "n_DMT1"] / sum(effects_b[, "n_DMT1"])
+  weights_b <- effects_b[, "n_DMF"] / sum(effects_b[, "n_DMF"])
   sum(weights_b * effects_b[, "ARR"])
 }
 
@@ -243,7 +243,7 @@ stratified_ate <- function(data, indices) {
     fit <- try(glm(y ~ treatment + offset(log(years)),
                    family = poisson(link = "log"), data = dh), silent = TRUE)
     if (inherits(fit, "try-error")) return(c(n = NA_real_, ARR = NA_real_))
-    c(n = nrow(dh), ARR = unname(exp(coef(fit)["treatmentDMT1"])))
+    c(n = nrow(dh), ARR = unname(exp(coef(fit)["treatmentDMF"])))
   })
   effects_b <- do.call(rbind, effects_b)
   if (any(!is.finite(effects_b))) return(NA_real_)

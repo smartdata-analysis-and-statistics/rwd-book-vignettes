@@ -18,7 +18,7 @@ execute:
 This practical is based on the online chapter [“Confounding adjustment using propensity score methods”](https://smartdata-analysis-and-statistics.github.io/comparative-effectiveness/chapter_06.html), which complements the material in *Comparative Effectiveness and Personalized Medicine Research Using Real-World Data* (pp. 99–123). The book chapter is by Tammy Jiang, Gabrielle Simoneau, Changyu Shen, Fabio Pellegrini, and Carl de Moor.
 
 ::: {.callout-note title="How to use this practical"}
-Complete the tasks and discussion questions before opening the [worked solution](chapter3_practical5_solution.qmd). The figure and short method summary introduce the analysis.
+Complete the tasks and discussion questions before opening the [worked solution](chapter7_practical5_solution.qmd). The figure and short method summary introduce the analysis.
 :::
 
 # Learning objectives
@@ -34,7 +34,7 @@ By the end of this practical, you should be able to:
 
 ![Schematic of propensity-score regression adjustment: estimate the PS from pretreatment covariates, fit a Poisson outcome model using treatment and PS, predict both treatment outcomes for each treated patient, and average the rate ratios to estimate the ATT.](figures/ps-regression-adjustment-att.svg){width=100%}
 
-Estimate each patient's propensity score from pretreatment covariates, then fit an outcome model with treatment, the estimated propensity score, and an offset for follow-up time. Predict each DMT1 patient's relapse rate under both treatments and average the rate contrast over DMT1 patients to target the ATT.
+Estimate each patient's propensity score from pretreatment covariates, then fit an outcome model with treatment, the estimated propensity score, and an offset for follow-up time. Predict each DMF patient's relapse rate under both treatments and average the rate contrast over DMF patients to target the ATT.
 
 **When to use:** when the PS model provides adequate overlap and balance, and the relationship between the PS and outcome can be modeled credibly.
 
@@ -52,10 +52,10 @@ install.packages(c("dplyr", "ggplot2", "marginaleffects"))
 library(dplyr)
 library(ggplot2)
 library(marginaleffects)
-data_file <- if (file.exists("data/chapter3_ps_data.rds")) {
-  "data/chapter3_ps_data.rds"
+data_file <- if (file.exists("data/chapter7_ps_data.rds")) {
+  "data/chapter7_ps_data.rds"
 } else {
-  "Chapter_3/data/chapter3_ps_data.rds"
+  "Chapter_7/data/chapter7_ps_data.rds"
 }
 dat <- readRDS(data_file)
 ```
@@ -93,17 +93,17 @@ Inspect the score distributions from the Section 2 PS model by treatment and con
 ggplot(dat, aes(x = ps, fill = treatment)) +
   geom_histogram(position = "identity", alpha = .45, bins = 30) +
   facet_wrap(~ treatment, ncol = 1) +
-  scale_fill_manual(values = c(DMT0 = "#80c42b", DMT1 = "#26476b"),
+  scale_fill_manual(values = c(TERI = "#80c42b", DMF = "#26476b"),
                     guide = "none") +
-  labs(x = "Estimated probability of DMT1", y = "Participants") +
+  labs(x = "Estimated probability of DMF", y = "Participants") +
   theme_minimal()
 
 dat %>% group_by(treatment) %>%
   summarise(n = n(), min = min(ps), median = median(ps), max = max(ps))
 
 # Rough score-range check: treated patients outside the observed control range
-control_range <- range(dat$ps[dat$treatment == "DMT0"])
-dat %>% filter(treatment == "DMT1") %>%
+control_range <- range(dat$ps[dat$treatment == "TERI"])
+dat %>% filter(treatment == "DMF") %>%
   summarise(
     n_treated = n(),
     n_outside_control_range = sum(ps < control_range[1] | ps > control_range[2]),
@@ -113,13 +113,13 @@ dat %>% filter(treatment == "DMT1") %>%
 
 **Questions:**
 
-1. Compare estimated PS distributions by treatment and describe regions with limited support. Report each group's score range and the number and percentage of DMT1 patients outside the observed DMT0 score range.
-2. Explain why overlap matters when predictions are standardized over DMT1 patients. Treat the range check as a rough diagnostic: patients inside the overall DMT0 range may still have few nearby controls.
+1. Compare estimated PS distributions by treatment and describe regions with limited support. Report each group's score range and the number and percentage of DMF patients outside the observed TERI score range.
+2. Explain why overlap matters when predictions are standardized over DMF patients. Treat the range check as a rough diagnostic: patients inside the overall TERI range may still have few nearby controls.
 3. State how much extrapolation the ATT appears to require and whether an explicitly defined overlap-restricted target population would be more credible.
 
 ## 3.2 Outcome-model fit and specification
 
-Evaluate the primary Poisson model fitted in Section 2, which includes treatment, estimated PS, and `offset(log(years))`, following [Section 3.7 of the comparative-effectiveness chapter](https://smartdata-analysis-and-statistics.github.io/comparative-effectiveness/chapter_06.html#propensity-score-weighting). That example targets the ATE by interpreting the treatment coefficient. Here, both treatment predictions will be standardized over DMT1 patients to target the ATT. The summary shows coefficient estimates and residual deviance; the residual-versus-PS plot checks whether residual patterns suggest that a linear PS term is inadequate. Treat both as diagnostic evidence, not proof that the model is correct.
+Evaluate the primary Poisson model fitted in Section 2, which includes treatment, estimated PS, and `offset(log(years))`, following [Section 3.7 of the comparative-effectiveness chapter](https://smartdata-analysis-and-statistics.github.io/comparative-effectiveness/chapter_06.html#propensity-score-weighting). That example targets the ATE by interpreting the treatment coefficient. Here, both treatment predictions will be standardized over DMF patients to target the ATT. The summary shows coefficient estimates and residual deviance; the residual-versus-PS plot checks whether residual patterns suggest that a linear PS term is inadequate. Treat both as diagnostic evidence, not proof that the model is correct.
 
 ```{r}
 #| eval: false
@@ -170,47 +170,47 @@ AIC(fit_ps, fit_ps_quad)
 
 # 4. Estimate the ATT
 
-Use counterfactual predictions under both treatments for each DMT1 patient. Averaging over the treated patients targets the ATT. The exponentiated marginal contrast is a relapse rate ratio (IRR).
+Use counterfactual predictions under both treatments for each DMF patient. Averaging over the treated patients targets the ATT. The exponentiated marginal contrast is a relapse rate ratio (IRR).
 
 ```{r}
 #| eval: false
 att_ps <- avg_comparisons(
   fit_ps, variables = "treatment", comparison = "ratioavg",
-  newdata = subset(dat, treatment == "DMT1"), vcov = "HC3"
+  newdata = subset(dat, treatment == "DMF"), vcov = "HC3"
 )
 att_ps
 
 # Sensitivity estimates, also standardized over treated patients
 avg_comparisons(fit_ps_quad, variables = "treatment", comparison = "ratioavg",
-                newdata = subset(dat, treatment == "DMT1"), vcov = "HC3")
+                newdata = subset(dat, treatment == "DMF"), vcov = "HC3")
 ```
 
 **Tasks:**
 
 1. Explain why the covariates used to estimate the PS must be measured before treatment and why the outcome model includes `offset(log(years))`.
-2. Report the standardized DMT1-versus-DMT0 marginal relapse rate ratio and 95% confidence interval.
-3. Explain how averaging counterfactual predictions over DMT1 patients targets the ATT. In this model, does the exponentiated treatment coefficient equal the standardized rate ratio? Explain what model feature makes them equal here and when they could differ.
+2. Report the standardized DMF-versus-TERI marginal relapse rate ratio and 95% confidence interval.
+3. Explain how averaging counterfactual predictions over DMF patients targets the ATT. In this model, does the exponentiated treatment coefficient equal the standardized rate ratio? Explain what model feature makes them equal here and when they could differ.
 
 ::: {.callout-note title="Optional: change the target to the ATE"}
-To target the ATE instead, change the rows used for standardization from DMT1 patients to the full cohort:
+To target the ATE instead, change the rows used for standardization from DMF patients to the full cohort:
 
 ```{r}
 #| eval: false
 # ATE support check: count observations in either treatment group
 # outside the other group's observed PS range.
-control_range <- range(dat$ps[dat$treatment == "DMT0"])
-treated_range <- range(dat$ps[dat$treatment == "DMT1"])
+control_range <- range(dat$ps[dat$treatment == "TERI"])
+treated_range <- range(dat$ps[dat$treatment == "DMF"])
 ps_support_ate <- data.frame(
-  treatment = c("DMT0", "DMT1"),
+  treatment = c("TERI", "DMF"),
   n_outside_other_range = c(
-    sum(dat$ps[dat$treatment == "DMT0"] < treated_range[1] |
-          dat$ps[dat$treatment == "DMT0"] > treated_range[2]),
-    sum(dat$ps[dat$treatment == "DMT1"] < control_range[1] |
-          dat$ps[dat$treatment == "DMT1"] > control_range[2])
+    sum(dat$ps[dat$treatment == "TERI"] < treated_range[1] |
+          dat$ps[dat$treatment == "TERI"] > treated_range[2]),
+    sum(dat$ps[dat$treatment == "DMF"] < control_range[1] |
+          dat$ps[dat$treatment == "DMF"] > control_range[2])
   )
 ) %>%
   dplyr::mutate(percent = 100 * n_outside_other_range /
-                  c(sum(dat$treatment == "DMT0"), sum(dat$treatment == "DMT1")))
+                  c(sum(dat$treatment == "TERI"), sum(dat$treatment == "DMF")))
 ps_support_ate
 
 ate <- avg_comparisons(
@@ -220,7 +220,7 @@ ate <- avg_comparisons(
 ate
 ```
 
-The specific change is `newdata = dat` instead of `newdata = subset(dat, treatment == "DMT1")`. The former averages the counterfactual outcomes over everyone (ATE); the latter averages over those treated (ATT). For the ATE, reassess support across the full cohort, including whether both treatment groups are represented across the covariate profiles; the ATT-focused check of treated patients outside the control score range is not sufficient by itself.
+The specific change is `newdata = dat` instead of `newdata = subset(dat, treatment == "DMF")`. The former averages the counterfactual outcomes over everyone (ATE); the latter averages over those treated (ATT). For the ATE, reassess support across the full cohort, including whether both treatment groups are represented across the covariate profiles; the ATT-focused check of treated patients outside the control score range is not sufficient by itself.
 :::
 
 # 5. Compare ATT estimates across methods

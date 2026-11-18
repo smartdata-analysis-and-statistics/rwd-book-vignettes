@@ -18,12 +18,12 @@ execute:
 This practical is based on the online chapter [“Confounding adjustment using propensity score methods”](https://smartdata-analysis-and-statistics.github.io/comparative-effectiveness/chapter_06.html), which complements the material in *Comparative Effectiveness and Personalized Medicine Research Using Real-World Data* (pp. 99–123). The book chapter is by Tammy Jiang, Gabrielle Simoneau, Changyu Shen, Fabio Pellegrini, and Carl de Moor.
 
 ::: {.callout-note title="How to use this solution"}
-The companion [task page](chapter3_practical1_task.qmd) contains the practical instructions. This page provides the code and comments on the results.
+The companion [task page](chapter7_practical1_task.qmd) contains the practical instructions. This page provides the code and comments on the results.
 :::
 
 # Introduction
 
-This practical compares the baseline characteristics of patients receiving DMT1 and DMT0, fits a propensity-score model, and assesses overlap. A propensity score (PS) is the probability of receiving the treatment of interest conditional on measured baseline covariates. It describes treatment assignment; it is not the probability of a good outcome.
+This practical compares the baseline characteristics of patients receiving DMF and TERI, fits a propensity-score model, and assesses overlap. A propensity score (PS) is the probability of receiving the treatment of interest conditional on measured baseline covariates. It describes treatment assignment; it is not the probability of a good outcome.
 
 # Learning objectives
 
@@ -42,10 +42,10 @@ By completing this practical, you will be able to:
 library(dplyr)
 library(ggplot2)
 library(cobalt)
-data_file <- if (file.exists("data/chapter3_ps_data.rds")) {
-  "data/chapter3_ps_data.rds"
+data_file <- if (file.exists("data/chapter7_ps_data.rds")) {
+  "data/chapter7_ps_data.rds"
 } else {
-  "Chapter_3/data/chapter3_ps_data.rds"
+  "Chapter_7/data/chapter7_ps_data.rds"
 }
 dat <- readRDS(data_file)
 ps_formula <- treatment ~ age + female + prevDMTefficacy +
@@ -64,10 +64,10 @@ colSums(is.na(dat))
 ```
 
 ::: {.callout-tip title="Comments on task 1"}
-The data contain 10,000 participants and 10 variables. There are 7,604 DMT1 patients and 2,396 DMT0 patients, and all 10 variables have zero missing values. The cohort is therefore complete for the baseline summaries and PS model used here.
+The data contain 10,000 participants and 10 variables. There are 7,604 DMF patients and 2,396 TERI patients, and all 10 variables have zero missing values. The cohort is therefore complete for the baseline summaries and PS model used here.
 :::
 
-2. Create a baseline characteristics table comparing DMT1 and DMT0, similar to the table in the reference chapter. Include all six baseline covariates in the PS model, report categorical variables as n (%) and continuous variables as mean (SD), and show the sample size in each treatment group. Do not add baseline hypothesis tests.
+2. Create a baseline characteristics table comparing DMF and TERI, similar to the table in the reference chapter. Include all six baseline covariates in the PS model, report categorical variables as n (%) and continuous variables as mean (SD), and show the sample size in each treatment group. Do not add baseline hypothesis tests.
 ```{r}
 #| eval: true
 baseline_vars <- c("age", "female", "prevDMTefficacy",
@@ -86,7 +86,7 @@ print(baseline_table)
 ```
 
 ::: {.callout-tip title="Comments and answer"}
-**Table comment:** The cohort has 10,000 participants: 2,396 in DMT0 and 7,604 in DMT1. The DMT1 group is younger on average (44.19 vs 51.30 years) and has lower premedical costs ($10,036.50 vs $25,761.92). Medium/high previous DMT efficacy is more common in DMT1 (47.9% vs 34.2%). These are descriptive differences, not evidence by themselves that treatment caused any outcome difference. `test = FALSE` appropriately omits baseline hypothesis tests; use the SMDs below to compare the magnitude of imbalance.
+**Table comment:** The cohort has 10,000 participants: 2,396 in TERI and 7,604 in DMF. The DMF group is younger on average (44.19 vs 51.30 years) and has lower premedical costs ($10,036.50 vs $25,761.92). Medium/high previous DMT efficacy is more common in DMF (47.9% vs 34.2%). These are descriptive differences, not evidence by themselves that treatment caused any outcome difference. `test = FALSE` appropriately omits baseline hypothesis tests; use the SMDs below to compare the magnitude of imbalance.
 :::
 
 3. Compare the six baseline covariates between treatment groups using standardized mean differences (SMDs) to describe imbalance; do not use hypothesis tests to select covariates.
@@ -113,7 +113,7 @@ summary(ps_fit)
 ggplot(dat, aes(x = ps, fill = treatment)) +
   geom_histogram(position = "identity", alpha = .45, bins = 30) +
   facet_wrap(~ treatment, ncol = 1) +
-  scale_fill_manual(values = c(DMT0 = "#80c42b", DMT1 = "#26476b"),
+  scale_fill_manual(values = c(TERI = "#80c42b", DMF = "#26476b"),
                     guide = "none") +
   labs(x = "Probability of Treatment", y = "Count",
        title = "Propensity Score Distribution by Treatment Group") +
@@ -123,7 +123,7 @@ dat %>% group_by(treatment) %>%
 ```
 
 ::: {.callout-tip title="Comments on task 5"}
-The estimated PS is higher for DMT1 overall: the group median is 0.864 for DMT1 and 0.623 for DMT0. The observed ranges are 0.0319–0.995 for DMT1 and approximately 0–0.989 for DMT0. The ranges overlap, but the different medians and extreme values warrant closer support checks; range overlap alone does not show that treated patients have adequate comparable controls across the full score distribution. Practicals 2–5 examine support and method-specific diagnostics further. The fixed seed makes these results reproducible for the saved cohort.
+The estimated PS is higher for DMF overall: the group median is 0.864 for DMF and 0.623 for TERI. The observed ranges are 0.0319–0.995 for DMF and approximately 0–0.989 for TERI. The ranges overlap, but the different medians and extreme values warrant closer support checks; range overlap alone does not show that treated patients have adequate comparable controls across the full score distribution. Practicals 2–5 examine support and method-specific diagnostics further. The fixed seed makes these results reproducible for the saved cohort.
 :::
 
 # 2. Methods based on the propensity score
